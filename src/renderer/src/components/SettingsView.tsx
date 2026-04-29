@@ -3,7 +3,7 @@ import type { JSX } from "react";
 import { i18n, LANGUAGE_OPTIONS, resolveLanguage } from "../../../shared/i18n";
 import { petAppearanceOptions, resolvePetAppearanceId } from "../../../shared/petAppearances";
 import type { DemoTrigger, Settings } from "../../../shared/types";
-import { distractionHelp, formatTimer, formatTimestamp, localeFor } from "../format";
+import { distractionHelp, formatDistractionState, formatTimer, formatTimestamp, localeFor } from "../format";
 import { useNow, useSnapshot } from "../hooks";
 import { ListField, NumberField, SelectField, ToggleField } from "./FormFields";
 
@@ -196,7 +196,7 @@ export function SettingsView(): JSX.Element {
             <dl className="runtime-grid">
               <div>
                 <dt>{labels.status}</dt>
-                <dd>{snapshot.distraction.state}</dd>
+                <dd>{formatDistractionState(snapshot.distraction.state, labels)}</dd>
               </div>
               <div>
                 <dt>{labels.matched}</dt>

@@ -2,6 +2,7 @@ import type { i18n } from "../../shared/i18n";
 import type { AppSnapshot, Language } from "../../shared/types";
 
 type SettingsCopy = ReturnType<typeof i18n>["settings"];
+type DistractionState = AppSnapshot["distraction"]["state"];
 
 export function localeFor(language: Language): string {
   return language === "zh-CN" ? "zh-CN" : "en-US";
@@ -41,7 +42,15 @@ export function distractionHelp(snapshot: AppSnapshot, labels: SettingsCopy): st
   if (!snapshot.settings.distractionDetectionEnabled) {
     return labels.detectionOffHelp;
   }
-  if (snapshot.distraction.error) return snapshot.distraction.error;
+  if (snapshot.distraction.state === "permission-needed") {
+    return labels.detectionPermissionHelp;
+  }
+  if (snapshot.distraction.state === "unsupported") {
+    return labels.detectionUnsupportedHelp;
+  }
+  if (snapshot.distraction.state === "error") {
+    return labels.detectionErrorHelp;
+  }
   if (!snapshot.distraction.lastCheckedAt) {
     return labels.detectionWaitingHelp;
   }
@@ -49,4 +58,20 @@ export function distractionHelp(snapshot: AppSnapshot, labels: SettingsCopy): st
     return labels.detectionPreviewHelp;
   }
   return labels.detectionFocusHelp;
+}
+
+export function formatDistractionState(state: DistractionState, labels: SettingsCopy): string {
+  switch (state) {
+    case "watching":
+      return labels.statusWatching;
+    case "permission-needed":
+      return labels.statusPermissionNeeded;
+    case "unsupported":
+      return labels.statusUnsupported;
+    case "error":
+      return labels.statusError;
+    case "idle":
+    default:
+      return labels.statusIdle;
+  }
 }

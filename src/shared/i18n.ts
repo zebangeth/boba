@@ -80,6 +80,11 @@ export const I18N = {
       dog: "小狗",
       distraction: "分心检测",
       status: "状态",
+      statusIdle: "未运行",
+      statusWatching: "检测中",
+      statusPermissionNeeded: "需要权限",
+      statusUnsupported: "当前系统不支持",
+      statusError: "检测异常",
       matched: "命中",
       app: "应用",
       checked: "检查时间",
@@ -115,6 +120,10 @@ export const I18N = {
       noActiveWindowTitle: "还没有捕获到当前窗口标题。",
       detectionOffHelp: "分心检测已关闭。开启后保存，即可预览当前活动窗口。",
       detectionWaitingHelp: "正在等待第一次活动窗口检查。",
+      detectionPermissionHelp:
+        "需要在 macOS 系统设置里允许 Pawse/Terminal 获取辅助功能权限，然后重启应用或重新开启分心检测。",
+      detectionUnsupportedHelp: "当前系统暂不支持活动窗口检测，分心检测会保持关闭状态。",
+      detectionErrorHelp: "活动窗口检测暂时失败。请检查权限后，重新开启分心检测或重启应用。",
       detectionPreviewHelp: "正在预览当前活动窗口。开始专注后，命中规则会触发警告。",
       detectionFocusHelp: "专注期间正在检测。命中屏蔽应用或关键词会触发警告。"
     },
@@ -192,6 +201,11 @@ export const I18N = {
       dog: "Dog",
       distraction: "Distraction",
       status: "Status",
+      statusIdle: "Idle",
+      statusWatching: "Watching",
+      statusPermissionNeeded: "Permission needed",
+      statusUnsupported: "Unsupported",
+      statusError: "Detection error",
       matched: "Matched",
       app: "App",
       checked: "Checked",
@@ -227,6 +241,12 @@ export const I18N = {
       noActiveWindowTitle: "No active window title captured yet.",
       detectionOffHelp: "Detection is off. Enable it and Save to preview the active window.",
       detectionWaitingHelp: "Waiting for the first active-window check.",
+      detectionPermissionHelp:
+        "Allow Pawse/Terminal in macOS System Settings accessibility permissions, then restart the app or toggle detection again.",
+      detectionUnsupportedHelp:
+        "Active-window detection is not supported on this system yet, so distraction detection will stay inactive.",
+      detectionErrorHelp:
+        "Active-window detection failed. Check permissions, then toggle detection again or restart the app.",
       detectionPreviewHelp:
         "Previewing the active window. Start Focus to trigger warnings from matched rules.",
       detectionFocusHelp:
