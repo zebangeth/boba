@@ -58,6 +58,11 @@ function useSnapshot(): AppSnapshot {
   const [snapshot, setSnapshot] = useState<AppSnapshot>({
     settings: initialSettings,
     stats: initialStats,
+    timers: {
+      breakDueAt: null,
+      hydrationDueAt: null,
+      focusEndsAt: null
+    },
     petState: "walking",
     blockingMode: null,
     focusActive: false,
@@ -90,6 +95,29 @@ function useSnapshot(): AppSnapshot {
   }, []);
 
   return snapshot;
+}
+
+function useNow(refreshMs = 30_000): number {
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), refreshMs);
+    return () => window.clearInterval(timer);
+  }, [refreshMs]);
+
+  return now;
+}
+
+function formatTimer(timestamp: number | null, now: number): string {
+  if (!timestamp) return "off";
+  const remainingMs = timestamp - now;
+  const absolute = new Intl.DateTimeFormat(undefined, {
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(timestamp);
+  if (remainingMs <= 0) return `${absolute} now`;
+  const remainingMinutes = Math.max(1, Math.ceil(remainingMs / 60_000));
+  return `${absolute} (${remainingMinutes}m)`;
 }
 
 function PetView(): JSX.Element {
@@ -262,6 +290,7 @@ function SettingsView(): JSX.Element {
   const { settings, stats } = snapshot;
   const [draft, setDraft] = useState(settings);
   const [settingsDirty, setSettingsDirty] = useState(false);
+  const now = useNow();
 
   useEffect(() => {
     setDraft(settings);
@@ -374,6 +403,33 @@ function SettingsView(): JSX.Element {
           <div>
             <dt>Dog</dt>
             <dd>{snapshot.dogVisible ? "visible" : "hidden"}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section className="settings-section">
+        <h2>Timers</h2>
+        <dl className="runtime-grid">
+          <div>
+            <dt>Break</dt>
+            <dd>{formatTimer(snapshot.timers.breakDueAt, now)}</dd>
+          </div>
+          <div>
+            <dt>Water</dt>
+            <dd>{formatTimer(snapshot.timers.hydrationDueAt, now)}</dd>
+          </div>
+          <div>
+            <dt>Focus End</dt>
+            <dd>{formatTimer(snapshot.timers.focusEndsAt, now)}</dd>
+          </div>
+          <div>
+            <dt>Updated</dt>
+            <dd>
+              {new Intl.DateTimeFormat(undefined, {
+                hour: "2-digit",
+                minute: "2-digit"
+              }).format(now)}
+            </dd>
           </div>
         </dl>
       </section>

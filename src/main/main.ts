@@ -62,6 +62,9 @@ let movementTimer: NodeJS.Timeout | null = null;
 let breakTimer: NodeJS.Timeout | null = null;
 let hydrationTimer: NodeJS.Timeout | null = null;
 let focusTimer: NodeJS.Timeout | null = null;
+let breakDueAt: number | null = null;
+let hydrationDueAt: number | null = null;
+let focusEndsAt: number | null = null;
 let idleTimer: NodeJS.Timeout | null = null;
 let bubbleTimer: NodeJS.Timeout | null = null;
 let dragTimer: NodeJS.Timeout | null = null;
@@ -107,6 +110,11 @@ function snapshot(): AppSnapshot {
   return {
     settings: getSettings(),
     stats: getStats(),
+    timers: {
+      breakDueAt,
+      hydrationDueAt,
+      focusEndsAt
+    },
     petState,
     blockingMode,
     petParked,
@@ -531,20 +539,25 @@ function scheduleIdleBeat(): void {
 function scheduleReminderTimers(): void {
   if (breakTimer) clearTimeout(breakTimer);
   if (hydrationTimer) clearTimeout(hydrationTimer);
+  breakDueAt = null;
+  hydrationDueAt = null;
 
   const settings = getSettings();
   if (settings.breakReminderEnabled && !breakMutedToday) {
+    breakDueAt = Date.now() + settings.breakIntervalMinutes * 60 * 1000;
     breakTimer = setTimeout(
       () => triggerBreakReminder(false),
       settings.breakIntervalMinutes * 60 * 1000
     );
   }
   if (settings.hydrationReminderEnabled) {
+    hydrationDueAt = Date.now() + settings.hydrationIntervalMinutes * 60 * 1000;
     hydrationTimer = setTimeout(
       () => triggerHydrationReminder(false),
       settings.hydrationIntervalMinutes * 60 * 1000
     );
   }
+  publishSnapshot();
 }
 
 function resumeLongTermState(): void {
@@ -581,7 +594,8 @@ function triggerBreakReminder(fromDemo: boolean): void {
   }
   ensurePetWindowVisible();
   blockingMode = "break";
-  sendToAll("app:snapshot", snapshot());
+  breakDueAt = null;
+  publishSnapshot();
   setPetState("knocking");
   showBubble({
     id: "break",
@@ -601,7 +615,8 @@ function triggerHydrationReminder(fromDemo: boolean): void {
   }
   ensurePetWindowVisible();
   blockingMode = "hydration";
-  sendToAll("app:snapshot", snapshot());
+  hydrationDueAt = null;
+  publishSnapshot();
   setPetState("thirsty");
   showBubble({
     id: "hydration",
@@ -641,6 +656,7 @@ function startFocusMode(): void {
   petParked = false;
   store.set("petParked", false);
   setPetState("focusGuard");
+  focusEndsAt = Date.now() + settings.focusDurationMinutes * 60 * 1000;
   sendToAll("app:snapshot", snapshot());
   pinToBottomRight();
   showBubble({
@@ -667,6 +683,7 @@ function stopFocusMode(completed: boolean): void {
     clearTimeout(focusTimer);
     focusTimer = null;
   }
+  focusEndsAt = null;
   updateStats((stats) => ({
     ...stats,
     focusMinutes: stats.focusMinutes + elapsedMinutes
@@ -706,11 +723,14 @@ function handleBubbleAction(actionId: string): void {
   if (actionId === "break:snooze") {
     resumeLongTermState();
     if (breakTimer) clearTimeout(breakTimer);
+    breakDueAt = Date.now() + 10 * 60 * 1000;
     breakTimer = setTimeout(() => triggerBreakReminder(false), 10 * 60 * 1000);
+    publishSnapshot();
     return;
   }
   if (actionId === "break:mute") {
     breakMutedToday = true;
+    breakDueAt = null;
     blockingMode = null;
     sendToAll("app:snapshot", snapshot());
     setPetState("annoyed");
@@ -730,7 +750,9 @@ function handleBubbleAction(actionId: string): void {
   if (actionId === "hydration:snooze") {
     resumeLongTermState();
     if (hydrationTimer) clearTimeout(hydrationTimer);
+    hydrationDueAt = Date.now() + 15 * 60 * 1000;
     hydrationTimer = setTimeout(() => triggerHydrationReminder(false), 15 * 60 * 1000);
+    publishSnapshot();
     return;
   }
   if (actionId === "focus:back") {

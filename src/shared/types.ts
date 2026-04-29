@@ -42,9 +42,16 @@ export type TodayStats = {
   focusWarnings: number;
 };
 
+export type TimerStatus = {
+  breakDueAt: number | null;
+  hydrationDueAt: number | null;
+  focusEndsAt: number | null;
+};
+
 export type AppSnapshot = {
   settings: Settings;
   stats: TodayStats;
+  timers: TimerStatus;
   petState: PetState;
   blockingMode: BlockingMode;
   focusActive: boolean;
