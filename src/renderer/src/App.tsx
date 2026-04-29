@@ -131,6 +131,20 @@ function formatTimestamp(timestamp: number | null): string {
   }).format(timestamp);
 }
 
+function distractionHelp(snapshot: AppSnapshot): string {
+  if (!snapshot.settings.distractionDetectionEnabled) {
+    return "Detection is off. Enable it and Save to preview the active window.";
+  }
+  if (snapshot.distraction.error) return snapshot.distraction.error;
+  if (!snapshot.distraction.lastCheckedAt) {
+    return "Waiting for the first active-window check.";
+  }
+  if (!snapshot.focusActive) {
+    return "Previewing the active window. Start Focus to trigger warnings from matched rules.";
+  }
+  return "Watching during Focus. Matched blocked apps or keywords will trigger a warning.";
+}
+
 function PetView(): JSX.Element {
   const snapshot = useSnapshot();
   const [bubble, setBubble] = useState<SpeechBubble | null>(null);
@@ -486,9 +500,7 @@ function SettingsView(): JSX.Element {
         <p className="diagnostic-copy">
           {snapshot.distraction.activeWindowTitle || "No active window title captured yet."}
         </p>
-        {snapshot.distraction.error ? (
-          <p className="diagnostic-copy warning-copy">{snapshot.distraction.error}</p>
-        ) : null}
+        <p className="diagnostic-copy warning-copy">{distractionHelp(snapshot)}</p>
       </section>
 
       <section className="settings-section">

@@ -68,6 +68,7 @@ let breakTimer: NodeJS.Timeout | null = null;
 let hydrationTimer: NodeJS.Timeout | null = null;
 let focusTimer: NodeJS.Timeout | null = null;
 let distractionTimer: NodeJS.Timeout | null = null;
+let distractionStartupTimer: NodeJS.Timeout | null = null;
 let breakDueAt: number | null = null;
 let hydrationDueAt: number | null = null;
 let focusEndsAt: number | null = null;
@@ -655,7 +656,6 @@ function isPermissionError(error: unknown): boolean {
 }
 
 async function checkDistractionNow(): Promise<void> {
-  if (!focusActive || blockingMode === "focusWarning") return;
   const settings = getSettings();
   if (!settings.distractionDetectionEnabled) return;
 
@@ -673,6 +673,7 @@ async function checkDistractionNow(): Promise<void> {
       error: null
     });
 
+    if (!focusActive || blockingMode === "focusWarning") return;
     if (!matchedRule) return;
     if (
       distractionStatus.lastWarningAt &&
@@ -697,9 +698,13 @@ function scheduleDistractionDetection(): void {
     clearInterval(distractionTimer);
     distractionTimer = null;
   }
+  if (distractionStartupTimer) {
+    clearTimeout(distractionStartupTimer);
+    distractionStartupTimer = null;
+  }
 
   const settings = getSettings();
-  if (!focusActive || !settings.distractionDetectionEnabled) {
+  if (!settings.distractionDetectionEnabled) {
     setDistractionStatus({
       state: "idle",
       matchedRule: null,
@@ -715,9 +720,11 @@ function scheduleDistractionDetection(): void {
 
   if (process.platform !== "darwin") return;
 
-  const firstCheckDelay = Math.max(0, settings.distractionGraceSeconds * 1000);
-  setTimeout(() => void checkDistractionNow(), firstCheckDelay);
-  distractionTimer = setInterval(() => void checkDistractionNow(), DISTRACTION_CHECK_INTERVAL_MS);
+  const firstCheckDelay = focusActive ? Math.max(0, settings.distractionGraceSeconds * 1000) : 0;
+  distractionStartupTimer = setTimeout(() => {
+    void checkDistractionNow();
+    distractionTimer = setInterval(() => void checkDistractionNow(), DISTRACTION_CHECK_INTERVAL_MS);
+  }, firstCheckDelay);
 }
 
 function resumeLongTermState(): void {
@@ -962,6 +969,7 @@ app.whenReady().then(() => {
   startMovement();
   scheduleIdleBeat();
   scheduleReminderTimers();
+  scheduleDistractionDetection();
   if (IS_DEV) {
     createSettingsWindow();
   }
@@ -978,6 +986,7 @@ app.on("before-quit", () => {
     hydrationTimer,
     focusTimer,
     distractionTimer,
+    distractionStartupTimer,
     idleTimer,
     bubbleTimer,
     dragTimer
