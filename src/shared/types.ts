@@ -1,9 +1,12 @@
 export type Language = "zh-CN" | "en";
 
+export type PetAppearanceId = "lovartPuppy" | "lineDog";
+
 export type PetFacing = "left" | "right";
 
 export type PetState =
   | "walking"
+  | "breakRunning"
   | "idle"
   | "sitting"
   | "happy"
@@ -11,7 +14,9 @@ export type PetState =
   | "thirsty"
   | "drinking"
   | "focusGuard"
-  | "annoyed";
+  | "annoyed"
+  | "sad"
+  | "sleeping";
 
 export type BubbleAction = {
   id: string;
@@ -30,6 +35,7 @@ export type BlockingMode = "break" | "breakRun" | "hydration" | "focusWarning" |
 
 export type Settings = {
   language: Language;
+  petAppearanceId: PetAppearanceId;
   breakReminderEnabled: boolean;
   breakIntervalMinutes: number;
   hydrationReminderEnabled: boolean;

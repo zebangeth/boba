@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { JSX, PointerEvent } from "react";
 import { i18n, resolveLanguage } from "../../../shared/i18n";
 import type { SpeechBubble } from "../../../shared/types";
-import { createAssetUrls } from "../assets";
+import { getPetAsset } from "../assets";
 import { useSnapshot } from "../hooks";
 
 type DragRef = {
@@ -15,7 +15,6 @@ type DragRef = {
 export function PetView(): JSX.Element {
   const snapshot = useSnapshot();
   const [bubble, setBubble] = useState<SpeechBubble | null>(null);
-  const assetUrls = useMemo(createAssetUrls, []);
   const dragRef = useRef<DragRef | null>(null);
   const labels = i18n(resolveLanguage(snapshot.settings.language)).settings;
 
@@ -31,6 +30,7 @@ export function PetView(): JSX.Element {
   const state = snapshot.petState;
   const altText = `Pawse ${state}`;
   const facingClass = snapshot.petFacing === "left" ? "facing-left" : "facing-right";
+  const asset = getPetAsset(snapshot.settings.petAppearanceId, state);
 
   function startPointer(event: PointerEvent<HTMLButtonElement>): void {
     if (event.button !== 0) return;
@@ -108,14 +108,16 @@ export function PetView(): JSX.Element {
       ) : null}
 
       <button
-        className={`pet-button state-${state} ${facingClass}`}
+        className={`pet-button state-${state} ${facingClass} ${
+          asset.isPlaceholder ? "placeholder-asset" : ""
+        }`}
         onPointerCancel={cancelPointer}
         onPointerDown={startPointer}
         onPointerMove={movePointer}
         onPointerUp={stopPointer}
         type="button"
       >
-        <img draggable={false} src={assetUrls[state]} alt={altText} />
+        <img draggable={false} src={asset.src} alt={altText} />
       </button>
     </main>
   );

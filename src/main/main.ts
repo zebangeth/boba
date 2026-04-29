@@ -6,6 +6,7 @@ import {
   todayKey
 } from "../shared/constants";
 import { i18n, resolveLanguage } from "../shared/i18n";
+import { resolvePetAppearanceId } from "../shared/petAppearances";
 import type {
   AppSnapshot,
   BlockingMode,
@@ -97,7 +98,12 @@ let distractionStatus: DistractionStatus = {
 
 function getSettings(): Settings {
   const stored = store.get("settings");
-  return { ...DEFAULT_SETTINGS, ...stored, language: resolveLanguage(stored.language) };
+  return {
+    ...DEFAULT_SETTINGS,
+    ...stored,
+    language: resolveLanguage(stored.language),
+    petAppearanceId: resolvePetAppearanceId(stored.petAppearanceId)
+  };
 }
 
 function text(): ReturnType<typeof i18n> {
@@ -105,7 +111,11 @@ function text(): ReturnType<typeof i18n> {
 }
 
 function setSettings(next: Settings): void {
-  const normalized = { ...next, language: resolveLanguage(next.language) };
+  const normalized = {
+    ...next,
+    language: resolveLanguage(next.language),
+    petAppearanceId: resolvePetAppearanceId(next.petAppearanceId)
+  };
   store.set("settings", normalized);
   sendToAll("settings:updated", normalized);
   settingsWindow?.setTitle(`${APP_NAME} ${text().menu.settings}`);
@@ -621,7 +631,7 @@ function startBreakRun(): void {
   store.set("petParked", false);
   breakRunDirection = Math.random() < 0.5 ? -1 : 1;
   nextBreakRunTurnAt = Date.now();
-  setPetState("walking");
+  setPetState("breakRunning");
   setPetFacing(breakRunDirection === 1 ? "right" : "left");
   const endsAt = Date.now() + BREAK_RUN_DURATION_MS;
   showBreakRunCountdown(endsAt);

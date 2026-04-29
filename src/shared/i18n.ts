@@ -55,6 +55,7 @@ export const I18N = {
     settings: {
       title: "设置",
       language: "语言",
+      petAppearance: "宠物形象",
       reminders: "提醒",
       enableBreakReminder: "开启休息提醒",
       breakInterval: "休息间隔",
@@ -163,6 +164,7 @@ export const I18N = {
     settings: {
       title: "Settings",
       language: "Language",
+      petAppearance: "Pet",
       reminders: "Reminders",
       enableBreakReminder: "Enable Break Reminder",
       breakInterval: "Break Interval",

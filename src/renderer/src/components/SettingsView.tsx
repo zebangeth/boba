@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { JSX } from "react";
 import { i18n, LANGUAGE_OPTIONS, resolveLanguage } from "../../../shared/i18n";
+import { petAppearanceOptions, resolvePetAppearanceId } from "../../../shared/petAppearances";
 import type { DemoTrigger, Settings } from "../../../shared/types";
 import { distractionHelp, formatTimer, formatTimestamp, localeFor } from "../format";
 import { useNow, useSnapshot } from "../hooks";
@@ -58,6 +59,12 @@ export function SettingsView(): JSX.Element {
           value={language}
           options={LANGUAGE_OPTIONS}
           onChange={(value) => updateDraft({ language: resolveLanguage(value) })}
+        />
+        <SelectField
+          label={labels.petAppearance}
+          value={resolvePetAppearanceId(draft.petAppearanceId)}
+          options={petAppearanceOptions(language)}
+          onChange={(value) => updateDraft({ petAppearanceId: resolvePetAppearanceId(value) })}
         />
       </section>
 

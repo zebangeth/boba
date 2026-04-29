@@ -1,15 +1,28 @@
-import type { PetState } from "../../shared/types";
+import {
+  getPetAssetDefinition,
+  resolvePetAppearanceId
+} from "../../shared/petAppearances";
+import type { PetAppearanceId, PetState } from "../../shared/types";
 
-export function createAssetUrls(): Record<PetState, string> {
+const warnedPlaceholders = new Set<string>();
+
+export type PetAsset = {
+  src: string;
+  isPlaceholder: boolean;
+};
+
+export function getPetAsset(appearanceId: PetAppearanceId, state: PetState): PetAsset {
+  const resolvedAppearanceId = resolvePetAppearanceId(appearanceId);
+  const asset = getPetAssetDefinition(resolvedAppearanceId, state);
+  const warningKey = `${resolvedAppearanceId}:${state}`;
+
+  if (asset.isPlaceholder && !warnedPlaceholders.has(warningKey)) {
+    warnedPlaceholders.add(warningKey);
+    console.warn(`Pawse is using a placeholder asset for ${warningKey}.`);
+  }
+
   return {
-    walking: window.pawse.assetUrl("lovart_footage/puppy/1 - playing outside.gif"),
-    idle: window.pawse.assetUrl("lovart_footage/puppy/standing pose.gif"),
-    sitting: window.pawse.assetUrl("lovart_footage/puppy/3 - welcome to work.gif"),
-    happy: window.pawse.assetUrl("lovart_footage/puppy/1 - waiting for playing outside.gif"),
-    knocking: window.pawse.assetUrl("lovart_footage/puppy/1 - waiting for playing outside.gif"),
-    thirsty: window.pawse.assetUrl("lovart_footage/water_gifs/want_water.gif"),
-    drinking: window.pawse.assetUrl("lovart_footage/water_gifs/got_water.gif"),
-    focusGuard: window.pawse.assetUrl("lovart_footage/puppy/standing pose4.gif"),
-    annoyed: window.pawse.assetUrl("lovart_footage/puppy/4 - sleeping.gif")
+    src: window.pawse.assetUrl(asset.path),
+    isPlaceholder: Boolean(asset.isPlaceholder)
   };
 }

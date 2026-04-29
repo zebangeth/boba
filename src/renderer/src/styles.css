@@ -63,13 +63,15 @@ textarea {
   transform: scaleX(-1);
 }
 
-.state-walking {
+.state-walking,
+.state-breakRunning {
   animation: pet-bob 1.4s ease-in-out infinite;
 }
 
 .state-idle,
 .state-sitting,
-.state-focusGuard {
+.state-focusGuard,
+.state-sleeping {
   animation: pet-breathe 2.4s ease-in-out infinite;
 }
 
@@ -89,7 +91,8 @@ textarea {
   animation: pet-drink 0.8s ease-in-out infinite;
 }
 
-.state-annoyed {
+.state-annoyed,
+.state-sad {
   filter: saturate(0.9);
   transform: rotate(-2deg);
 }
