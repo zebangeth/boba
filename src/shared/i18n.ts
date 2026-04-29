@@ -30,6 +30,7 @@ export const I18N = {
     },
     actions: {
       breakDone: "我站起来了",
+      breakRunDone: "我回来了",
       breakSnooze: "10 分钟后提醒",
       breakMute: "今天先别管我",
       hydrationDone: "我喝水了",
@@ -151,6 +152,7 @@ export const I18N = {
     },
     actions: {
       breakDone: "I stood up",
+      breakRunDone: "I'm back",
       breakSnooze: "Remind in 10 min",
       breakMute: "Leave me today",
       hydrationDone: "I drank water",

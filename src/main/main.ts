@@ -562,10 +562,12 @@ function clearBreakRunTimers(): void {
 }
 
 function showBreakRunCountdown(endsAt: number): void {
+  const labels = text();
   const remainingSeconds = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
   showBubble({
     id: "break-run",
-    message: text().bubble.breakRun(remainingSeconds)
+    message: labels.bubble.breakRun(remainingSeconds),
+    actions: [{ id: "break-run:done", label: labels.actions.breakRunDone, kind: "primary" }]
   });
 }
 
@@ -942,6 +944,10 @@ function triggerDemo(trigger: DemoTrigger): void {
 }
 
 function handleBubbleAction(actionId: string): void {
+  if (actionId === "break-run:done") {
+    finishBreakRun();
+    return;
+  }
   if (actionId === "break:done") {
     updateStats((stats) => ({ ...stats, breaksTaken: stats.breaksTaken + 1 }));
     startBreakRun();
