@@ -1,0 +1,205 @@
+# Pawse 素材指南
+
+这份文档定义 Pawse 的宠物动画素材契约。后续补素材或新增宠物形象时，应以这里的状态列表为准。即使某个宠物暂时没有完全匹配的素材，也不要删除状态或压缩状态数量，而是在 manifest 里使用同一宠物形象下的 fallback 或 placeholder。
+
+## 目标
+
+- 让产品行为不依赖当前素材是否齐全。
+- 让每个宠物形象都能通过本地 manifest 接入。
+- 给素材准备方一个明确的 GIF 清单。
+- 给开发者一个新增宠物形象的代码接入参考。
+- 保证桌宠窗口保持透明，不出现宠物背后的矩形背景。
+
+## GIF 基础要求
+
+- 当前实现使用 animated `.gif`。
+- GIF 背景必须透明，不要烘焙纯色底。
+- 同一个宠物形象的所有状态应保持一致画布尺寸、视觉比例和锚点。
+- 每个 GIF 四周要留出足够 padding，避免 CSS 上下浮动、跳跃、摇晃或镜像时被裁切。
+- 移动类素材默认应面朝右。小狗向左移动时，renderer 会用 CSS 镜像。
+- 长时间状态需要能自然循环，例如 `walking`、`idle`、`focusGuard`、`sleeping`。
+- 短反馈状态可以更夸张，例如 `happy`、`annoyed`，但也要能被保持 1 到 3 秒而不突兀。
+- 文件命名优先使用语义名称，例如 `walking.gif`、`break-running.gif`、`focus-guard.gif`。
+
+推荐的新宠物素材目录结构：
+
+```text
+assets/pets/<pet-id>/
+  fallback.gif
+  walking.gif
+  break-running.gif
+  idle.gif
+  sitting.gif
+  happy.gif
+  knocking.gif
+  thirsty.gif
+  drinking.gif
+  focus-guard.gif
+  annoyed.gif
+  sad.gif
+  sleeping.gif
+```
+
+当前已有素材仍保留在原目录里，不需要为了这份指南立刻迁移。
+
+## 状态契约
+
+`PetState` 定义在 `src/shared/types.ts`。每个宠物形象最终都应该为下面 12 个状态准备素材。
+
+| 状态 | 什么时候触发 | 动画意图 | 素材要求 |
+| --- | --- | --- | --- |
+| `walking` | 默认巡逻状态。小狗可见、未停留、未专注、没有阻塞提醒时触发。 | 普通走路、巡逻、沿屏幕底部移动。 | 面朝右。向左移动时由 renderer 镜像。 |
+| `breakRunning` | 用户接受休息提醒后触发。主动休息阶段持续 60 秒，或用户点击“我回来了”后结束。 | 更活跃、更有存在感的奔跑或玩耍，促使用户离开屏幕。 | 面朝右。不要复用太安静的普通走路素材。 |
+| `idle` | 普通巡逻时的短暂 idle beat。目前约每 22 秒从 `walking` 切入一次，然后回到 `walking`。 | 呼吸、眨眼、张望、发呆、轻微等待。 | 应该克制，不要看起来像提醒或警告。 |
+| `sitting` | 用户选择“停在这里”、拖拽结束后停留，或 parked 状态的返回状态。 | 坐下、趴下、安静待命。 | 适合作为“待在这里”的稳定状态。 |
+| `happy` | 点击小狗、喝水成功后的反馈、专注完成或取消、休息奔跑完成、Demo Happy。 | 开心、摇尾巴、庆祝、跳跃、爱心。 | 短反馈状态。CSS 会额外加轻微跳跃。 |
+| `knocking` | 休息提醒弹出时，用户还没有选择操作。 | 敲门、戳戳、等待出去玩、吸引注意。 | 要表达“请回应我”，但不要太凶。CSS 会加轻微敲击感。 |
+| `thirsty` | 喝水提醒弹出时，用户还没有确认喝水。 | 口渴、想喝水、举杯、讨水、提醒补水。 | 最好一眼能看出和补水有关。 |
+| `drinking` | 用户确认“我喝水了”之后立即触发。 | 喝水、收到水、满足、补水成功。 | 通常会在随后切到 `happy`。 |
+| `focusGuard` | 专注模式启动、专注警告、用户点“回去工作”后触发。 | 守卫、警觉、工作中、认真盯着、帮用户守住专注。 | 这是专注模式的核心形象，要坚定但不要吓人。 |
+| `annoyed` | 用户选择今天不再休息提醒时触发。未来也可用于忽略提醒等负反馈。 | 有点生气、担心、失望、郁闷。 | 不要过度敌意，整体仍然是陪伴感。 |
+| `sad` | 预留状态。未来可用于长时间忽略、低活跃、负向反馈或关怀场景。当前主流程还没有完整接入。 | 难过、担心、哭、委屈。 | 有真实素材最好，没有则用同宠物 placeholder。 |
+| `sleeping` | 预留状态。未来可用于夜间、长时间 idle、勿扰、休眠。当前主流程还没有完整接入。 | 睡觉、休息、晚安、低能量循环。 | 有真实素材最好，没有则用同宠物 placeholder。 |
+
+## 当前触发流程
+
+当前主要状态切换发生在 `src/main/main.ts`。
+
+| 流程 | 状态变化 |
+| --- | --- |
+| 普通巡逻 | `walking`，偶尔进入 `idle`，再回到 `walking` |
+| 让小狗待在这里 | `sitting` |
+| 拖拽小狗 | 非专注时拖拽用 `sitting`，专注时拖拽用 `focusGuard` |
+| 点击小狗 | `happy`，然后回到 `focusGuard`、`sitting` 或 `walking` |
+| 休息提醒 | 提醒弹窗期间使用 `knocking` |
+| 确认休息 | `breakRunning`，结束后 `happy`，再回到 `walking` 或 `sitting` |
+| 稍后休息 | 回到长期状态，通常是 `walking`、`sitting` 或 `focusGuard` |
+| 今天不再提醒休息 | `annoyed`，然后回到长期状态 |
+| 喝水提醒 | 提醒弹窗期间使用 `thirsty` |
+| 确认喝水 | `drinking`，然后 `happy`，再回到长期状态 |
+| 开始专注 | `focusGuard` |
+| 分心警告 | `focusGuard`，同时显示警告气泡 |
+| 回去工作 | `focusGuard` |
+| 结束或完成专注 | `happy`，然后回到 `walking` 或 `sitting` |
+| Demo Happy | `happy` |
+
+## 素材优先级
+
+给一个新宠物形象准备素材时，建议按这个顺序补齐：
+
+1. 核心循环：`walking`、`idle`、`sitting`
+2. 核心产品流程：`knocking`、`breakRunning`、`thirsty`、`drinking`、`focusGuard`、`happy`
+3. 负反馈和预留状态：`annoyed`、`sad`、`sleeping`
+4. fallback：一个属于同一宠物形象的中性 GIF
+
+fallback 必须来自同一个宠物形象。不要让某个宠物缺素材时退回到另一个宠物形象。
+
+## 移动和镜像规则
+
+当前 renderer 会根据 `petFacing` 对 GIF 做左右镜像：
+
+- `petFacing === "right"` 时正常显示。
+- `petFacing === "left"` 时使用 `scaleX(-1)` 镜像。
+
+最需要注意方向的状态：
+
+- `walking`
+- `breakRunning`
+
+这两个状态的 GIF 默认都应该面朝右。避免在这类 GIF 里出现文字、Logo、单侧道具等镜像后会明显不合理的元素。
+
+## Placeholder 规则
+
+当产品状态存在，但当前宠物还没有完全匹配的素材时，可以使用 placeholder。
+
+在 `src/shared/petAppearances.ts` 里用 `isPlaceholder: true` 标记：
+
+```ts
+sad: {
+  path: "assets/pets/example/sleeping.gif",
+  isPlaceholder: true
+}
+```
+
+适合标记 placeholder 的情况：
+
+- 语义接近但不完全准确。
+- 状态是预留状态，当前主流程还不常触发。
+- Demo 可接受，但正式 polish 前应该替换。
+
+不要因为素材不完整就删除状态。状态数量由产品行为定义，不由素材完整度定义。
+
+## 新增宠物形象流程
+
+1. 在 `src/shared/types.ts` 的 `PetAppearanceId` 里增加新 ID。
+2. 在 `src/shared/petAppearances.ts` 的 `PET_APPEARANCES` 里增加 manifest。
+3. 为新宠物提供中英文名称，分别用于 `zh-CN` 和 `en`。
+4. 设置一个同宠物形象下的 fallback。
+5. 尽可能映射所有 `PetState`。
+6. 对不完全匹配的素材加 `isPlaceholder: true`。
+7. 打开 Settings，确认宠物形象下拉里出现新选项。
+8. 用 Demo 和基础操作走一遍：
+   - Demo Break
+   - Demo Hydration
+   - Demo Focus Warning
+   - Demo Happy
+   - Start/Stop Focus
+   - Park/Resume walking
+
+manifest 示例：
+
+```ts
+export const PET_APPEARANCES = {
+  examplePet: {
+    id: "examplePet",
+    label: {
+      "zh-CN": "示例宠物",
+      en: "Example Pet"
+    },
+    fallback: {
+      path: "assets/pets/example/fallback.gif",
+      isPlaceholder: true
+    },
+    states: {
+      walking: { path: "assets/pets/example/walking.gif" },
+      breakRunning: { path: "assets/pets/example/break-running.gif" },
+      idle: { path: "assets/pets/example/idle.gif" },
+      sitting: { path: "assets/pets/example/sitting.gif" },
+      happy: { path: "assets/pets/example/happy.gif" },
+      knocking: { path: "assets/pets/example/knocking.gif" },
+      thirsty: { path: "assets/pets/example/thirsty.gif" },
+      drinking: { path: "assets/pets/example/drinking.gif" },
+      focusGuard: { path: "assets/pets/example/focus-guard.gif" },
+      annoyed: { path: "assets/pets/example/annoyed.gif" },
+      sad: { path: "assets/pets/example/sad.gif" },
+      sleeping: { path: "assets/pets/example/sleeping.gif" }
+    }
+  }
+};
+```
+
+## QA Checklist
+
+新增或替换宠物素材前，至少检查：
+
+- 宠物窗口背景保持透明。
+- 每个 manifest 里映射的 GIF 都能在 dev 和 build 中加载。
+- fallback 来自同一个宠物形象。
+- `walking` 和 `breakRunning` 向左镜像时看起来合理。
+- 语音气泡不会遮住宠物最关键的身体或表情。
+- 同一宠物的所有状态视觉尺寸一致。
+- 切换状态时宠物不会突然大幅跳动、缩放或偏移。
+- Demo Break 会依次看到 `knocking`、`breakRunning`、`happy`。
+- Demo Hydration 会依次看到 `thirsty`、`drinking`、`happy`。
+- Focus Mode 会显示 `focusGuard`。
+- Demo Happy 会显示 `happy`。
+- placeholder 状态都已经在 manifest 里明确标记。
+
+## 当前内置宠物形象
+
+当前内置 manifest 位于 `src/shared/petAppearances.ts`。
+
+| Appearance ID | 名称 | 说明 |
+| --- | --- | --- |
+| `lovartPuppy` | Lovart 小狗 / Lovart Puppy | 当前主 Demo 宠物。部分预留状态仍使用 placeholder。 |
+| `lineDog` | 线条小狗 / Line Dog | 第二个内置宠物。部分状态使用语义接近的表情包 GIF 作为 placeholder。 |
