@@ -59,6 +59,8 @@ export const I18N = {
       welcomeCopy:
         "Pawse 会住在菜单栏和屏幕底部。你可以先用演示按钮测试休息、喝水和专注提醒；如果要启用分心检测，请在 macOS 系统设置里允许辅助功能权限。",
       dismissWelcome: "知道了",
+      appearance: "外观",
+      quickActions: "快捷操作",
       language: "语言",
       petAppearance: "宠物形象",
       reminders: "提醒",
@@ -185,6 +187,8 @@ export const I18N = {
       welcomeCopy:
         "Pawse lives in the menu bar and near the bottom of your screen. Try the demo buttons for break, hydration, and focus flows; enable macOS accessibility permissions before using distraction detection.",
       dismissWelcome: "Got it",
+      appearance: "Appearance",
+      quickActions: "Quick Actions",
       language: "Language",
       petAppearance: "Pet",
       reminders: "Reminders",

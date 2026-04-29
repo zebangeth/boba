@@ -13,8 +13,8 @@ export const PET_WINDOW = {
 } as const;
 
 export const SETTINGS_WINDOW = {
-  width: 460,
-  height: 600
+  width: 760,
+  height: 680
 } as const;
 
 export const PRELOAD_PATH = join(__dirname, "../preload/index.cjs");
