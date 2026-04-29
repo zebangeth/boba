@@ -1,4 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import type {
   AppSnapshot,
   DemoTrigger,
@@ -23,6 +25,8 @@ const api = {
   updateSettings: (settings: Partial<Settings>): void =>
     ipcRenderer.send("settings:update", settings),
   triggerDemo: (trigger: DemoTrigger): void => ipcRenderer.send("demo:trigger", trigger),
+  assetUrl: (relativePath: string): string =>
+    pathToFileURL(join(process.cwd(), relativePath)).href,
   startFocus: (): void => ipcRenderer.send("focus:start"),
   stopFocus: (): void => ipcRenderer.send("focus:stop"),
   resetToday: (): void => ipcRenderer.send("stats:reset-today"),

@@ -30,7 +30,10 @@ const PET_WINDOW_WIDTH = 320;
 const PET_WINDOW_HEIGHT = 300;
 const SETTINGS_WINDOW_WIDTH = 460;
 const SETTINGS_WINDOW_HEIGHT = 600;
-const PRELOAD_PATH = join(__dirname, "../preload/index.mjs");
+const PRELOAD_PATH = join(__dirname, "../preload/index.cjs");
+const IS_DEV = Boolean(process.env.ELECTRON_RENDERER_URL);
+
+app.setName("Pawse");
 
 const store = new Store<StoreSchema>({
   name: "pawse-demo",
@@ -166,13 +169,14 @@ function createPetWindow(): void {
     webPreferences: {
       preload: PRELOAD_PATH,
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      sandbox: false,
+      webSecurity: !IS_DEV
     }
   });
 
   petWindow.setAlwaysOnTop(true, "floating");
   petWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  petWindow.loadURL;
   loadRenderer(petWindow, "pet");
   petWindow.once("ready-to-show", () => {
     petWindow?.showInactive();
@@ -198,7 +202,9 @@ function createSettingsWindow(): void {
     webPreferences: {
       preload: PRELOAD_PATH,
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      sandbox: false,
+      webSecurity: !IS_DEV
     }
   });
 
@@ -223,16 +229,17 @@ function trayImage(): Electron.NativeImage {
 
 function createTray(): void {
   tray = new Tray(trayImage());
+  tray.setTitle("Pawse");
   tray.setToolTip("Pawse");
+  tray.on("click", () => {
+    tray?.popUpContextMenu();
+  });
   updateTrayMenu();
 }
 
-function updateTrayMenu(): void {
-  if (!tray) return;
+function actionMenuItems(): Electron.MenuItemConstructorOptions[] {
   const dogVisible = Boolean(petWindow?.isVisible());
-  const template: Electron.MenuItemConstructorOptions[] = [
-    { label: "Pawse", enabled: false },
-    { type: "separator" },
+  return [
     {
       label: dogVisible ? "Hide Dog" : "Show Dog",
       click: () => {
@@ -257,7 +264,34 @@ function updateTrayMenu(): void {
     { label: "Demo: Happy Reaction", click: () => triggerDemo("happy") },
     { type: "separator" },
     { label: "Settings", click: createSettingsWindow },
-    { label: "Reset Today", click: resetTodayStats },
+    { label: "Reset Today", click: resetTodayStats }
+  ];
+}
+
+function updateApplicationMenu(): void {
+  const template: Electron.MenuItemConstructorOptions[] = [
+    {
+      label: "Pawse",
+      submenu: [
+        ...actionMenuItems(),
+        { type: "separator" },
+        { role: "quit", label: "Quit" }
+      ]
+    },
+    { role: "editMenu" },
+    { role: "windowMenu" }
+  ];
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
+function updateTrayMenu(): void {
+  updateApplicationMenu();
+  if (!tray) return;
+  const template: Electron.MenuItemConstructorOptions[] = [
+    { label: "Pawse", enabled: false },
+    { type: "separator" },
+    ...actionMenuItems(),
     { type: "separator" },
     {
       label: "Quit",
@@ -550,6 +584,9 @@ app.whenReady().then(() => {
   startMovement();
   scheduleIdleBeat();
   scheduleReminderTimers();
+  if (IS_DEV) {
+    createSettingsWindow();
+  }
 
   app.on("activate", () => {
     if (!petWindow) createPetWindow();

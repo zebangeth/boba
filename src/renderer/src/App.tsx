@@ -9,21 +9,25 @@ import type {
   TodayStats
 } from "../../shared/types";
 
-const assetUrls: Record<PetState, string> = {
-  walking: new URL("../../../lovart_footage/puppy/1 - playing outside.gif", import.meta.url)
-    .href,
-  idle: new URL("../../../lovart_footage/puppy/standing pose.gif", import.meta.url).href,
-  sitting: new URL("../../../lovart_footage/puppy/3 - welcome to work.gif", import.meta.url)
-    .href,
-  happy: new URL("../../../lovart_footage/puppy/1 - waiting for playing outside.gif", import.meta.url)
-    .href,
-  knocking: new URL("../../../lovart_footage/puppy/2 - standing reminder.gif", import.meta.url)
-    .href,
-  thirsty: new URL("../../../lovart_footage/water_gifs/want_water.gif", import.meta.url).href,
-  drinking: new URL("../../../lovart_footage/water_gifs/got_water.gif", import.meta.url).href,
-  focusGuard: new URL("../../../lovart_footage/puppy/standing pose4.gif", import.meta.url).href,
-  annoyed: new URL("../../../lovart_footage/puppy/4 - sleeping.gif", import.meta.url).href
-};
+type PawseWindow = Window & { pawse?: Window["pawse"] };
+
+function pawseApi(): Window["pawse"] | undefined {
+  return (window as PawseWindow).pawse;
+}
+
+function createAssetUrls(): Record<PetState, string> {
+  return {
+    walking: window.pawse.assetUrl("lovart_footage/puppy/1 - playing outside.gif"),
+    idle: window.pawse.assetUrl("lovart_footage/puppy/standing pose.gif"),
+    sitting: window.pawse.assetUrl("lovart_footage/puppy/3 - welcome to work.gif"),
+    happy: window.pawse.assetUrl("lovart_footage/puppy/1 - waiting for playing outside.gif"),
+    knocking: window.pawse.assetUrl("lovart_footage/puppy/2 - standing reminder.gif"),
+    thirsty: window.pawse.assetUrl("lovart_footage/water_gifs/want_water.gif"),
+    drinking: window.pawse.assetUrl("lovart_footage/water_gifs/got_water.gif"),
+    focusGuard: window.pawse.assetUrl("lovart_footage/puppy/standing pose4.gif"),
+    annoyed: window.pawse.assetUrl("lovart_footage/puppy/4 - sleeping.gif")
+  };
+}
 
 const initialSettings: Settings = {
   breakReminderEnabled: true,
@@ -81,6 +85,7 @@ function useSnapshot(): AppSnapshot {
 function PetView(): JSX.Element {
   const snapshot = useSnapshot();
   const [bubble, setBubble] = useState<SpeechBubble | null>(null);
+  const assetUrls = useMemo(createAssetUrls, []);
 
   useEffect(() => {
     const offBubble = window.pawse.onShowBubble(setBubble);
@@ -311,6 +316,23 @@ function SettingsView(): JSX.Element {
 }
 
 export default function App(): JSX.Element {
+  if (!pawseApi()) {
+    return (
+      <main className="settings-shell">
+        <header>
+          <p className="eyebrow">Pawse</p>
+          <h1>Preload unavailable</h1>
+        </header>
+        <section className="settings-section">
+          <p className="diagnostic-copy">
+            Electron preload 没有注入，桌宠控制接口暂时不可用。请重启 pnpm dev，或检查
+            preload 路径和 sandbox 设置。
+          </p>
+        </section>
+      </main>
+    );
+  }
+
   const route = window.location.hash.replace("#", "");
   if (route === "settings") return <SettingsView />;
   return <PetView />;
