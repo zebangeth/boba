@@ -204,16 +204,29 @@ h2 {
   color: #6f6256;
   font-size: 14px;
   line-height: 1.45;
-  margin: 0;
+  margin: 10px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.warning-copy {
+  color: #8a3324;
 }
 
 .toggle-row,
-.number-row {
+.number-row,
+.list-row {
   align-items: center;
   display: flex;
   font-size: 14px;
   justify-content: space-between;
   min-height: 38px;
+}
+
+.list-row {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .toggle-row input {
@@ -231,6 +244,17 @@ h2 {
   padding: 4px 8px;
   text-align: right;
   width: 86px;
+}
+
+.list-row textarea {
+  background: #fff;
+  border: 1px solid rgba(45, 38, 31, 0.18);
+  border-radius: 8px;
+  color: #2d261f;
+  min-height: 64px;
+  padding: 8px;
+  resize: vertical;
+  width: 100%;
 }
 
 .stats-grid,

@@ -122,6 +122,15 @@ function formatTimer(timestamp: number | null, now: number): string {
   return `${absolute} (${remainingMinutes}m)`;
 }
 
+function formatTimestamp(timestamp: number | null): string {
+  if (!timestamp) return "never";
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  }).format(timestamp);
+}
+
 function PetView(): JSX.Element {
   const snapshot = useSnapshot();
   const [bubble, setBubble] = useState<SpeechBubble | null>(null);
@@ -273,6 +282,33 @@ function NumberField({
   );
 }
 
+function ListField({
+  label,
+  value,
+  onChange
+}: {
+  label: string;
+  value: string[];
+  onChange: (value: string[]) => void;
+}): JSX.Element {
+  return (
+    <label className="list-row">
+      <span>{label}</span>
+      <textarea
+        value={value.join(", ")}
+        onChange={(event) =>
+          onChange(
+            event.target.value
+              .split(",")
+              .map((item) => item.trim())
+              .filter(Boolean)
+          )
+        }
+      />
+    </label>
+  );
+}
+
 function DemoButton({
   trigger,
   children
@@ -293,11 +329,12 @@ function SettingsView(): JSX.Element {
   const [draft, setDraft] = useState(settings);
   const [settingsDirty, setSettingsDirty] = useState(false);
   const now = useNow();
+  const savedSettingsKey = JSON.stringify(settings);
 
   useEffect(() => {
     setDraft(settings);
     setSettingsDirty(false);
-  }, [settings]);
+  }, [savedSettingsKey]);
 
   function updateDraft(partial: Partial<Settings>): void {
     setDraft((current) => ({ ...current, ...partial }));
@@ -358,6 +395,23 @@ function SettingsView(): JSX.Element {
           checked={draft.distractionDetectionEnabled}
           onChange={(distractionDetectionEnabled) => updateDraft({ distractionDetectionEnabled })}
         />
+        <NumberField
+          label="Detection Grace"
+          value={draft.distractionGraceSeconds}
+          min={0}
+          max={120}
+          onChange={(distractionGraceSeconds) => updateDraft({ distractionGraceSeconds })}
+        />
+        <ListField
+          label="Blocked Apps"
+          value={draft.distractionBlockedApps}
+          onChange={(distractionBlockedApps) => updateDraft({ distractionBlockedApps })}
+        />
+        <ListField
+          label="Blocked Keywords"
+          value={draft.distractionBlockedKeywords}
+          onChange={(distractionBlockedKeywords) => updateDraft({ distractionBlockedKeywords })}
+        />
         <ToggleField
           label="Enable Sound Effects"
           checked={draft.soundEnabled}
@@ -407,6 +461,34 @@ function SettingsView(): JSX.Element {
             <dd>{snapshot.dogVisible ? "visible" : "hidden"}</dd>
           </div>
         </dl>
+      </section>
+
+      <section className="settings-section">
+        <h2>Distraction</h2>
+        <dl className="runtime-grid">
+          <div>
+            <dt>Status</dt>
+            <dd>{snapshot.distraction.state}</dd>
+          </div>
+          <div>
+            <dt>Matched</dt>
+            <dd>{snapshot.distraction.matchedRule ?? "none"}</dd>
+          </div>
+          <div>
+            <dt>App</dt>
+            <dd>{snapshot.distraction.activeApp || "none"}</dd>
+          </div>
+          <div>
+            <dt>Checked</dt>
+            <dd>{formatTimestamp(snapshot.distraction.lastCheckedAt)}</dd>
+          </div>
+        </dl>
+        <p className="diagnostic-copy">
+          {snapshot.distraction.activeWindowTitle || "No active window title captured yet."}
+        </p>
+        {snapshot.distraction.error ? (
+          <p className="diagnostic-copy warning-copy">{snapshot.distraction.error}</p>
+        ) : null}
       </section>
 
       <section className="settings-section">
