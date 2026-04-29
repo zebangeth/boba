@@ -495,14 +495,14 @@ function movePetWithCursor(): void {
 }
 
 function startPetDrag(offset: { offsetX: number; offsetY: number }): void {
-  if (focusActive || blockingMode || !petWindow || petWindow.isDestroyed()) return;
+  if (blockingMode || !petWindow || petWindow.isDestroyed()) return;
   dragOffset = {
     x: Math.min(Math.max(Math.round(offset.offsetX), 0), PET_WINDOW.width),
     y: Math.min(Math.max(Math.round(offset.offsetY), 0), PET_WINDOW.height)
   };
   if (dragTimer) clearInterval(dragTimer);
   hideBubble();
-  setPetState("sitting");
+  setPetState(focusActive ? "focusGuard" : "sitting");
   movePetWithCursor();
   dragTimer = setInterval(movePetWithCursor, 16);
 }
@@ -511,6 +511,12 @@ function stopPetDrag(): void {
   if (!dragTimer) return;
   clearInterval(dragTimer);
   dragTimer = null;
+  if (focusActive) {
+    persistPetPosition();
+    setPetState("focusGuard");
+    sendToAll("app:snapshot", snapshot());
+    return;
+  }
   parkPetHere();
 }
 
