@@ -47,7 +47,7 @@ export const I18N = {
       resumeWalking: "继续巡逻",
       demoBreakReminder: "演示：休息提醒",
       demoHydrationReminder: "演示：喝水提醒",
-      demoFocusWarning: "演示：分心警告",
+      demoFocusWarning: "演示：分心提醒",
       demoHappyReaction: "演示：开心反馈",
       settings: "设置",
       resetToday: "重置今日",
@@ -61,6 +61,7 @@ export const I18N = {
       dismissWelcome: "知道了",
       appearance: "外观",
       quickActions: "快捷操作",
+      testTools: "测试工具",
       language: "语言",
       petAppearance: "宠物形象",
       reminders: "提醒",
@@ -76,19 +77,10 @@ export const I18N = {
       blockedKeywords: "屏蔽关键词",
       enableSoundEffects: "开启音效",
       today: "今日",
-      todaySummary: (
-        breaksTaken: number,
-        watersLogged: number,
-        focusMinutes: number,
-        focusWarnings: number
-      ) =>
-        `今天你已经休息 ${breaksTaken} 次，喝水 ${watersLogged} 杯，专注 ${focusMinutes} 分钟。${
-          focusWarnings > 0 ? ` 我提醒过你 ${focusWarnings} 次。` : ""
-        }`,
       breaks: "休息",
       waters: "喝水",
       focusMin: "专注分钟",
-      warnings: "警告",
+      warnings: "分心次数",
       minuteUnit: "分钟",
       secondUnit: "秒",
       addListItem: "添加…",
@@ -116,15 +108,12 @@ export const I18N = {
       demo: "演示",
       demoBreak: "休息",
       demoWater: "喝水",
-      demoFocusWarning: "专注警告",
+      demoFocusWarning: "分心提醒",
       demoHappy: "开心",
       resetToday: "重置今日",
       startFocus: "开始专注",
       stopFocus: "停止专注",
       resumeWalk: "继续巡逻",
-      save: "保存",
-      autoSaved: "已自动保存",
-      saving: "正在保存...",
       diagnostics: "诊断信息",
       preloadUnavailable: "Preload 不可用",
       preloadCopy:
@@ -144,8 +133,8 @@ export const I18N = {
         "需要在 macOS 系统设置里允许 Pawse/Terminal 获取辅助功能权限，然后重启应用或重新开启分心检测。",
       detectionUnsupportedHelp: "当前系统暂不支持活动窗口检测，分心检测会保持关闭状态。",
       detectionErrorHelp: "活动窗口检测暂时失败。请检查权限后，重新开启分心检测或重启应用。",
-      detectionPreviewHelp: "正在预览当前活动窗口。开始专注后，命中规则会触发警告。",
-      detectionFocusHelp: "专注期间正在检测。命中屏蔽应用或关键词会触发警告。"
+      detectionPreviewHelp: "正在预览当前活动窗口。开始专注后，命中规则会触发分心提醒。",
+      detectionFocusHelp: "专注期间正在检测。命中屏蔽应用或关键词会触发分心提醒。"
     },
     system: {
       unsupportedDistraction: "分心检测目前仅支持 macOS。"
@@ -188,7 +177,7 @@ export const I18N = {
       resumeWalking: "Resume Walking",
       demoBreakReminder: "Demo: Break Reminder",
       demoHydrationReminder: "Demo: Hydration Reminder",
-      demoFocusWarning: "Demo: Focus Warning",
+      demoFocusWarning: "Demo: Distraction Nudge",
       demoHappyReaction: "Demo: Happy Reaction",
       settings: "Settings",
       resetToday: "Reset Today",
@@ -202,6 +191,7 @@ export const I18N = {
       dismissWelcome: "Got it",
       appearance: "Appearance",
       quickActions: "Quick Actions",
+      testTools: "Test Tools",
       language: "Language",
       petAppearance: "Pet",
       reminders: "Reminders",
@@ -217,19 +207,10 @@ export const I18N = {
       blockedKeywords: "Blocked Keywords",
       enableSoundEffects: "Enable Sound Effects",
       today: "Today",
-      todaySummary: (
-        breaksTaken: number,
-        watersLogged: number,
-        focusMinutes: number,
-        focusWarnings: number
-      ) =>
-        `Today: ${breaksTaken} breaks, ${watersLogged} waters, ${focusMinutes} focus min.${
-          focusWarnings > 0 ? ` I nudged you ${focusWarnings} times.` : ""
-        }`,
       breaks: "Breaks",
       waters: "Waters",
       focusMin: "Focus min",
-      warnings: "Warnings",
+      warnings: "Distractions",
       minuteUnit: "min",
       secondUnit: "s",
       addListItem: "Add…",
@@ -257,15 +238,12 @@ export const I18N = {
       demo: "Demo",
       demoBreak: "Break",
       demoWater: "Water",
-      demoFocusWarning: "Focus Warning",
+      demoFocusWarning: "Distraction",
       demoHappy: "Happy",
       resetToday: "Reset Today",
       startFocus: "Start Focus",
       stopFocus: "Stop Focus",
       resumeWalk: "Resume Walk",
-      save: "Save",
-      autoSaved: "Auto-saved",
-      saving: "Saving...",
       diagnostics: "Diagnostics",
       preloadUnavailable: "Preload unavailable",
       preloadCopy:
@@ -288,9 +266,9 @@ export const I18N = {
       detectionErrorHelp:
         "Active-window detection failed. Check permissions, then toggle detection again or restart the app.",
       detectionPreviewHelp:
-        "Previewing the active window. Start Focus to trigger warnings from matched rules.",
+        "Previewing the active window. Start Focus to trigger distraction nudges from matched rules.",
       detectionFocusHelp:
-        "Watching during Focus. Matched blocked apps or keywords will trigger a warning."
+        "Watching during Focus. Matched blocked apps or keywords will trigger a distraction nudge."
     },
     system: {
       unsupportedDistraction: "Distraction detection currently supports macOS only."

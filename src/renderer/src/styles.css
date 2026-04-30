@@ -239,7 +239,7 @@ textarea {
   align-items: center;
   display: flex;
   gap: 16px;
-  padding-bottom: 18px;
+  padding-bottom: 14px;
 }
 
 .prefs__avatar {
@@ -256,15 +256,59 @@ textarea {
   min-width: 0;
 }
 
-.today-line {
+.prefs__eyebrow {
+  color: var(--ink-faint);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+}
+
+.prefs__title {
   color: var(--ink);
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 24px;
+  line-height: 1.1;
   margin: 0;
 }
 
-.today-line .text-link {
-  margin-left: 6px;
+.prefs__stats {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  min-height: 76px;
+  padding: 12px 14px;
+}
+
+.stat-card__label {
+  color: var(--ink-soft);
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.stat-card__value {
+  color: var(--ink);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 28px;
+  line-height: 1;
+  margin-top: 13px;
+}
+
+.stat-card__value small {
+  color: var(--ink-faint);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .text-link {
@@ -281,17 +325,6 @@ textarea {
 
 .text-link:hover {
   text-decoration-color: var(--accent);
-}
-
-.prefs__save {
-  color: var(--ink-faint);
-  font-size: 11.5px;
-  margin: 4px 0 0;
-  transition: color 160ms ease;
-}
-
-.prefs__save.is-saving {
-  color: var(--accent);
 }
 
 .prefs__welcome {
@@ -629,7 +662,7 @@ textarea {
   font-weight: 600;
 }
 
-.diag-demo {
+.test-tools {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -820,6 +853,10 @@ textarea {
 @media (max-width: 640px) {
   .prefs {
     padding: 24px 20px 40px;
+  }
+
+  .prefs__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .prefs__diag {

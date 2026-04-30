@@ -182,27 +182,23 @@ function ChipsControl({
   );
 }
 
-function TodayLine({
-  stats,
-  labels,
-  onReset
+function StatCard({
+  label,
+  value,
+  unit
 }: {
-  stats: { breaksTaken: number; watersLogged: number; focusMinutes: number; focusWarnings: number };
-  labels: SettingsCopy;
-  onReset: () => void;
+  label: string;
+  value: number;
+  unit?: string;
 }): JSX.Element {
   return (
-    <p className="today-line">
-      {labels.todaySummary(
-        stats.breaksTaken,
-        stats.watersLogged,
-        stats.focusMinutes,
-        stats.focusWarnings
-      )}
-      <button type="button" className="text-link" onClick={onReset}>
-        {labels.resetToday}
-      </button>
-    </p>
+    <div className="stat-card">
+      <span className="stat-card__label">{label}</span>
+      <strong className="stat-card__value">
+        {value}
+        {unit ? <small>{unit}</small> : null}
+      </strong>
+    </div>
   );
 }
 
@@ -246,16 +242,17 @@ export function SettingsView(): JSX.Element {
       <header className="prefs__head">
         <img className="prefs__avatar" src={petAvatar.src} alt="" />
         <div className="prefs__intro">
-          <TodayLine
-            stats={stats}
-            labels={labels}
-            onReset={window.pawse.resetToday}
-          />
-          <p className={`prefs__save ${settingsDirty ? "is-saving" : ""}`} aria-live="polite">
-            {settingsDirty ? labels.saving : labels.autoSaved}
-          </p>
+          <p className="prefs__eyebrow">Pawse</p>
+          <h1 className="prefs__title">{labels.today}</h1>
         </div>
       </header>
+
+      <section className="prefs__stats" aria-label={labels.today}>
+        <StatCard label={labels.breaks} value={stats.breaksTaken} />
+        <StatCard label={labels.waters} value={stats.watersLogged} />
+        <StatCard label={labels.focusMin} value={stats.focusMinutes} unit={labels.minuteUnit} />
+        <StatCard label={labels.warnings} value={stats.focusWarnings} />
+      </section>
 
       {!draft.onboardingDismissed ? (
         <aside className="prefs__welcome">
@@ -443,6 +440,19 @@ export function SettingsView(): JSX.Element {
         </div>
       </section>
 
+      <section className="prefs__group">
+        <h2 className="prefs__group-title">{labels.testTools}</h2>
+        <div className="test-tools">
+          <DemoChip trigger="break" label={labels.demoBreak} />
+          <DemoChip trigger="hydration" label={labels.demoWater} />
+          <DemoChip trigger="focusWarning" label={labels.demoFocusWarning} />
+          <DemoChip trigger="happy" label={labels.demoHappy} />
+          <button type="button" className="pref-chip-button" onClick={window.pawse.resetToday}>
+            {labels.resetToday}
+          </button>
+        </div>
+      </section>
+
       <section className="prefs__group prefs__group--quiet">
         <button
           type="button"
@@ -455,16 +465,6 @@ export function SettingsView(): JSX.Element {
         </button>
         {diagnosticsOpen ? (
           <div className="prefs__diag">
-            <section className="diag-group">
-              <h3 className="diag-group__title">{labels.demo}</h3>
-              <div className="diag-demo">
-                <DemoChip trigger="break" label={labels.demoBreak} />
-                <DemoChip trigger="hydration" label={labels.demoWater} />
-                <DemoChip trigger="focusWarning" label={labels.demoFocusWarning} />
-                <DemoChip trigger="happy" label={labels.demoHappy} />
-              </div>
-            </section>
-
             <DiagGroup title={labels.runtime}>
               <DiagCard label={labels.state} value={snapshot.petState} />
               <DiagCard
