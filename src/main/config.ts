@@ -8,8 +8,8 @@ export const APP_NAME = "Pawse";
 export const STORE_NAME = "pawse-demo";
 
 export const PET_WINDOW = {
-  width: 320,
-  height: 300
+  width: 300,
+  height: 290
 } as const;
 
 export const SETTINGS_WINDOW = {

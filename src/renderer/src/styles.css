@@ -30,11 +30,12 @@ textarea {
   background: transparent;
   display: flex;
   flex-direction: column;
-  height: 300px;
+  height: 290px;
   justify-content: flex-end;
-  padding: 8px 10px 0;
+  padding: 0 8px;
+  pointer-events: none;
   position: relative;
-  width: 320px;
+  width: 300px;
 }
 
 .pet-button {
@@ -47,6 +48,7 @@ textarea {
   justify-content: center;
   outline: 0;
   padding: 0;
+  pointer-events: auto;
   position: relative;
   width: 184px;
 }
@@ -102,11 +104,14 @@ textarea {
   border: 1px solid rgba(76, 57, 39, 0.14);
   border-radius: 16px;
   box-shadow: 0 12px 28px rgba(45, 38, 31, 0.18);
-  max-width: 300px;
+  bottom: 154px;
+  left: 50%;
   min-width: 210px;
+  max-width: calc(100% - 18px);
   padding: 12px;
   position: absolute;
-  top: 8px;
+  pointer-events: auto;
+  transform: translateX(-50%);
   z-index: 2;
 }
 
@@ -164,6 +169,7 @@ textarea {
   font-weight: 700;
   letter-spacing: 0;
   padding: 6px 10px;
+  pointer-events: auto;
   position: absolute;
   right: 36px;
   z-index: 1;
