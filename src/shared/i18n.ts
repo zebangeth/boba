@@ -76,10 +76,23 @@ export const I18N = {
       blockedKeywords: "屏蔽关键词",
       enableSoundEffects: "开启音效",
       today: "今日",
+      todaySummary: (
+        breaksTaken: number,
+        watersLogged: number,
+        focusMinutes: number,
+        focusWarnings: number
+      ) =>
+        `今天你已经休息 ${breaksTaken} 次，喝水 ${watersLogged} 杯，专注 ${focusMinutes} 分钟。${
+          focusWarnings > 0 ? ` 我提醒过你 ${focusWarnings} 次。` : ""
+        }`,
       breaks: "休息",
       waters: "喝水",
       focusMin: "专注分钟",
       warnings: "警告",
+      minuteUnit: "分钟",
+      secondUnit: "秒",
+      addListItem: "添加…",
+      removeListItem: (entry: string) => `移除 ${entry}`,
       runtime: "运行状态",
       state: "状态",
       mode: "模式",
@@ -204,10 +217,23 @@ export const I18N = {
       blockedKeywords: "Blocked Keywords",
       enableSoundEffects: "Enable Sound Effects",
       today: "Today",
+      todaySummary: (
+        breaksTaken: number,
+        watersLogged: number,
+        focusMinutes: number,
+        focusWarnings: number
+      ) =>
+        `Today: ${breaksTaken} breaks, ${watersLogged} waters, ${focusMinutes} focus min.${
+          focusWarnings > 0 ? ` I nudged you ${focusWarnings} times.` : ""
+        }`,
       breaks: "Breaks",
       waters: "Waters",
       focusMin: "Focus min",
       warnings: "Warnings",
+      minuteUnit: "min",
+      secondUnit: "s",
+      addListItem: "Add…",
+      removeListItem: (entry: string) => `Remove ${entry}`,
       runtime: "Runtime",
       state: "State",
       mode: "Mode",

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { JSX, ReactNode } from "react";
 import { i18n, LANGUAGE_OPTIONS, resolveLanguage } from "../../../shared/i18n";
 import { petAppearanceOptions, resolvePetAppearanceId } from "../../../shared/petAppearances";
-import type { DemoTrigger, Language, PetAppearanceId, Settings } from "../../../shared/types";
+import type { DemoTrigger, PetAppearanceId, Settings } from "../../../shared/types";
 import { getPetAsset } from "../assets";
 import { distractionHelp, formatDistractionState, formatTimer, formatTimestamp, localeFor } from "../format";
 import { useNow, useSnapshot } from "../hooks";
@@ -123,11 +123,11 @@ function SelectControl({
 function ChipsControl({
   value,
   onChange,
-  placeholder
+  labels
 }: {
   value: string[];
   onChange: (next: string[]) => void;
-  placeholder: string;
+  labels: SettingsCopy;
 }): JSX.Element {
   const [draft, setDraft] = useState("");
 
@@ -150,7 +150,7 @@ function ChipsControl({
             {entry}
             <button
               type="button"
-              aria-label={`Remove ${entry}`}
+              aria-label={labels.removeListItem(entry)}
               onClick={() => onChange(value.filter((item) => item !== entry))}
             >
               ×
@@ -159,7 +159,7 @@ function ChipsControl({
         ))}
         <input
           className="pref-chips__input"
-          placeholder={placeholder}
+          placeholder={labels.addListItem}
           value={draft}
           onChange={(event) => {
             const next = event.target.value;
@@ -184,29 +184,21 @@ function ChipsControl({
 
 function TodayLine({
   stats,
-  language,
   labels,
   onReset
 }: {
   stats: { breaksTaken: number; watersLogged: number; focusMinutes: number; focusWarnings: number };
-  language: Language;
   labels: SettingsCopy;
   onReset: () => void;
 }): JSX.Element {
-  const sentence =
-    language === "zh-CN"
-      ? `今天你已经休息 ${stats.breaksTaken} 次，喝水 ${stats.watersLogged} 杯，专注 ${stats.focusMinutes} 分钟。`
-      : `Today: ${stats.breaksTaken} breaks, ${stats.watersLogged} waters, ${stats.focusMinutes} focus min.`;
-  const warningSentence =
-    stats.focusWarnings > 0
-      ? language === "zh-CN"
-        ? ` 我提醒过你 ${stats.focusWarnings} 次。`
-        : ` I nudged you ${stats.focusWarnings} times.`
-      : "";
   return (
     <p className="today-line">
-      {sentence}
-      {warningSentence}
+      {labels.todaySummary(
+        stats.breaksTaken,
+        stats.watersLogged,
+        stats.focusMinutes,
+        stats.focusWarnings
+      )}
       <button type="button" className="text-link" onClick={onReset}>
         {labels.resetToday}
       </button>
@@ -249,9 +241,6 @@ export function SettingsView(): JSX.Element {
     setSettingsDirty(true);
   }
 
-  const minuteUnit = language === "zh-CN" ? "分钟" : "min";
-  const secondUnit = language === "zh-CN" ? "秒" : "s";
-
   return (
     <main className="prefs">
       <header className="prefs__head">
@@ -259,7 +248,6 @@ export function SettingsView(): JSX.Element {
         <div className="prefs__intro">
           <TodayLine
             stats={stats}
-            language={language}
             labels={labels}
             onReset={window.pawse.resetToday}
           />
@@ -343,7 +331,7 @@ export function SettingsView(): JSX.Element {
               value={draft.breakIntervalMinutes}
               min={1}
               max={180}
-              unit={minuteUnit}
+              unit={labels.minuteUnit}
               onChange={(breakIntervalMinutes) => updateDraft({ breakIntervalMinutes })}
             />
           }
@@ -365,7 +353,7 @@ export function SettingsView(): JSX.Element {
               value={draft.hydrationIntervalMinutes}
               min={1}
               max={240}
-              unit={minuteUnit}
+              unit={labels.minuteUnit}
               onChange={(hydrationIntervalMinutes) => updateDraft({ hydrationIntervalMinutes })}
             />
           }
@@ -381,7 +369,7 @@ export function SettingsView(): JSX.Element {
               value={draft.focusDurationMinutes}
               min={1}
               max={120}
-              unit={minuteUnit}
+              unit={labels.minuteUnit}
               onChange={(focusDurationMinutes) => updateDraft({ focusDurationMinutes })}
             />
           }
@@ -410,7 +398,7 @@ export function SettingsView(): JSX.Element {
                   value={draft.distractionGraceSeconds}
                   min={0}
                   max={120}
-                  unit={secondUnit}
+                  unit={labels.secondUnit}
                   onChange={(distractionGraceSeconds) => updateDraft({ distractionGraceSeconds })}
                 />
               }
@@ -420,7 +408,7 @@ export function SettingsView(): JSX.Element {
               control={
                 <ChipsControl
                   value={draft.distractionBlockedApps}
-                  placeholder={language === "zh-CN" ? "添加…" : "Add…"}
+                  labels={labels}
                   onChange={(distractionBlockedApps) => updateDraft({ distractionBlockedApps })}
                 />
               }
@@ -430,7 +418,7 @@ export function SettingsView(): JSX.Element {
               control={
                 <ChipsControl
                   value={draft.distractionBlockedKeywords}
-                  placeholder={language === "zh-CN" ? "添加…" : "Add…"}
+                  labels={labels}
                   onChange={(distractionBlockedKeywords) => updateDraft({ distractionBlockedKeywords })}
                 />
               }
