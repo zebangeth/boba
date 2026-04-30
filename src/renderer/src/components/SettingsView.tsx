@@ -432,11 +432,6 @@ export function SettingsView(): JSX.Element {
               {labels.startFocus}
             </button>
           )}
-          {snapshot.petParked ? (
-            <button type="button" className="pref-button" onClick={window.pawse.resumeWalking}>
-              {labels.resumeWalk}
-            </button>
-          ) : null}
         </div>
       </section>
 
@@ -472,9 +467,7 @@ export function SettingsView(): JSX.Element {
                 value={
                   snapshot.focusActive
                     ? labels.focus
-                    : snapshot.petParked
-                      ? labels.parked
-                      : labels.walking
+                    : labels.idle
                 }
               />
               <DiagCard label={labels.reminder} value={snapshot.blockingMode ?? labels.none} />
@@ -547,7 +540,7 @@ function PetCard({
   selected: boolean;
   onSelect: () => void;
 }): JSX.Element {
-  const asset = useMemo(() => getPetAsset(appearanceId, "walking"), [appearanceId]);
+  const asset = useMemo(() => getPetAsset(appearanceId, "idle"), [appearanceId]);
   return (
     <button
       type="button"

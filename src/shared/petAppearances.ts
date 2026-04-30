@@ -26,7 +26,6 @@ export const PET_APPEARANCES: Record<PetAppearanceId, PetAppearanceManifest> = {
       isPlaceholder: true
     },
     states: {
-      walking: { path: "lovart_footage/puppy/1 - playing outside.gif" },
       breakRunning: { path: "lovart_footage/puppy/1 - playing outside.gif" },
       idle: { path: "lovart_footage/puppy/standing pose.gif" },
       sitting: { path: "lovart_footage/puppy/3 - welcome to work.gif" },
@@ -51,7 +50,6 @@ export const PET_APPEARANCES: Record<PetAppearanceId, PetAppearanceManifest> = {
       isPlaceholder: true
     },
     states: {
-      walking: { path: lineDog("线条小狗第9弹_来了.gif"), isPlaceholder: true },
       breakRunning: { path: lineDog("线条小狗第12弹_爬行.gif"), isPlaceholder: true },
       idle: { path: lineDog("线条小狗第8弹_无聊.gif") },
       sitting: { path: lineDog("线条小狗第11弹_趴趴.gif"), isPlaceholder: true },

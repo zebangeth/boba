@@ -29,11 +29,10 @@ export function useSnapshot(): AppSnapshot {
       lastWarningAt: null,
       error: null
     },
-    petState: "walking",
+    petState: "idle",
     petFacing: "right",
     blockingMode: null,
     focusActive: false,
-    petParked: false,
     dogVisible: true
   });
 

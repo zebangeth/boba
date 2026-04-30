@@ -45,7 +45,6 @@ type StoreSchema = {
   stats: TodayStats;
   statsHistory: StatsHistory;
   petPosition?: PetPosition;
-  petParked: boolean;
 };
 
 app.setName(APP_NAME);
@@ -55,21 +54,18 @@ const store = new Store<StoreSchema>({
   defaults: {
     settings: DEFAULT_SETTINGS,
     stats: createEmptyStats(),
-    statsHistory: {},
-    petParked: false
+    statsHistory: {}
   }
 });
 
 let petWindow: BrowserWindow | null = null;
 let settingsWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
-let petParked = store.get("petParked", false);
-let petState: PetState = petParked ? "sitting" : "walking";
+let petState: PetState = "idle";
 let petFacing: PetFacing = "right";
 let blockingMode: BlockingMode = null;
 let focusActive = false;
 let focusStartedAt: number | null = null;
-let movementTimer: NodeJS.Timeout | null = null;
 let breakRunTimer: NodeJS.Timeout | null = null;
 let breakRunCountdownTimer: NodeJS.Timeout | null = null;
 let breakRunMovementTimer: NodeJS.Timeout | null = null;
@@ -81,10 +77,8 @@ let distractionStartupTimer: NodeJS.Timeout | null = null;
 let breakDueAt: number | null = null;
 let hydrationDueAt: number | null = null;
 let focusEndsAt: number | null = null;
-let idleTimer: NodeJS.Timeout | null = null;
 let bubbleTimer: NodeJS.Timeout | null = null;
 let dragTimer: NodeJS.Timeout | null = null;
-let walkDirection: 1 | -1 = 1;
 let breakRunDirection: 1 | -1 = 1;
 let nextBreakRunTurnAt = 0;
 let breakMutedToday = false;
@@ -195,7 +189,6 @@ function snapshot(): AppSnapshot {
     petState,
     petFacing,
     blockingMode,
-    petParked,
     dogVisible: Boolean(petWindow?.isVisible()),
     focusActive
   };
@@ -417,14 +410,6 @@ function actionMenuItems(): Electron.MenuItemConstructorOptions[] {
         else startFocusMode();
       }
     },
-    {
-      label: petParked ? labels.resumeWalking : labels.parkDogHere,
-      enabled: dogVisible && !focusActive,
-      click: () => {
-        if (petParked) resumeWalking();
-        else parkPetHere();
-      }
-    },
     { type: "separator" },
     { label: labels.demoBreakReminder, click: () => triggerDemo("break") },
     { label: labels.demoHydrationReminder, click: () => triggerDemo("hydration") },
@@ -484,14 +469,6 @@ function showPetContextMenu(): void {
         else startFocusMode();
       }
     },
-    {
-      label: petParked ? labels.resumeWalking : labels.parkDogHere,
-      enabled: !focusActive,
-      click: () => {
-        if (petParked) resumeWalking();
-        else parkPetHere();
-      }
-    },
     { type: "separator" },
     { label: labels.demoBreakReminder, click: () => triggerDemo("break") },
     { label: labels.demoHydrationReminder, click: () => triggerDemo("hydration") },
@@ -520,30 +497,6 @@ function pinToBottomRight(): void {
     width: PET_WINDOW.width,
     height: PET_WINDOW.height
   });
-}
-
-function parkPetHere(): void {
-  if (!petWindow || petWindow.isDestroyed()) return;
-  petParked = true;
-  store.set("petParked", true);
-  persistPetPosition();
-  if (!focusActive && !blockingMode) {
-    setPetState("sitting");
-    showBubble({ id: "parked", message: text().bubble.parked, autoDismissMs: 1800 });
-  }
-  updateTrayMenu();
-  sendToAll("app:snapshot", snapshot());
-}
-
-function resumeWalking(): void {
-  petParked = false;
-  store.set("petParked", false);
-  if (!focusActive && !blockingMode) {
-    setPetState("walking");
-    showBubble({ id: "resume-walking", message: text().bubble.resumeWalking, autoDismissMs: 1600 });
-  }
-  updateTrayMenu();
-  sendToAll("app:snapshot", snapshot());
 }
 
 function movePetWithCursor(): void {
@@ -581,7 +534,9 @@ function stopPetDrag(): void {
     sendToAll("app:snapshot", snapshot());
     return;
   }
-  parkPetHere();
+  persistPetPosition();
+  setPetState("idle");
+  sendToAll("app:snapshot", snapshot());
 }
 
 function clearBreakRunTimers(): void {
@@ -655,7 +610,7 @@ function finishBreakRun(): void {
   setTimeout(() => {
     if (!blockingMode && !focusActive) {
       hideBubble();
-      setPetState(petParked ? "sitting" : "walking");
+      setPetState("idle");
       scheduleReminderTimers();
     }
   }, 2300);
@@ -667,8 +622,6 @@ function startBreakRun(): void {
   clearBreakRunTimers();
   blockingMode = "breakRun";
   breakDueAt = null;
-  petParked = false;
-  store.set("petParked", false);
   breakRunDirection = Math.random() < 0.5 ? -1 : 1;
   nextBreakRunTurnAt = Date.now();
   setPetState("breakRunning");
@@ -679,47 +632,6 @@ function startBreakRun(): void {
   breakRunMovementTimer = setInterval(movePetForBreakRun, BREAK_RUN_TICK_MS);
   breakRunTimer = setTimeout(finishBreakRun, BREAK_RUN_DURATION_MS);
   publishSnapshot();
-}
-
-function startMovement(): void {
-  if (movementTimer) clearInterval(movementTimer);
-  movementTimer = setInterval(() => {
-    if (!petWindow || petWindow.isDestroyed() || !petWindow.isVisible()) return;
-    if (blockingMode || focusActive || petParked || petState !== "walking") return;
-
-    const workArea = screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).workArea;
-    const bounds = petWindow.getBounds();
-    let nextX = bounds.x + walkDirection * 2;
-    const minX = workArea.x + 12;
-    const maxX = workArea.x + workArea.width - PET_WINDOW.width - 12;
-
-    if (nextX <= minX) {
-      nextX = minX;
-      walkDirection = 1;
-    }
-    if (nextX >= maxX) {
-      nextX = maxX;
-      walkDirection = -1;
-    }
-    setPetFacing(walkDirection === 1 ? "right" : "left");
-
-    petWindow.setBounds({
-      ...bounds,
-      x: nextX,
-      y: workArea.y + workArea.height - PET_WINDOW.height
-    });
-  }, 70);
-}
-
-function scheduleIdleBeat(): void {
-  if (idleTimer) clearInterval(idleTimer);
-  idleTimer = setInterval(() => {
-    if (blockingMode || focusActive || petParked || petState !== "walking") return;
-    setPetState("idle");
-    setTimeout(() => {
-      if (!blockingMode && !focusActive && petState === "idle") setPetState("walking");
-    }, 3500);
-  }, 22000);
 }
 
 function scheduleReminderTimers(): void {
@@ -832,13 +744,13 @@ function resumeLongTermState(): void {
     sendToAll("app:snapshot", snapshot());
     return;
   }
-  setPetState(petParked ? "sitting" : "walking");
+  setPetState("idle");
   sendToAll("app:snapshot", snapshot());
 }
 
 function happyFeedback(message: string = text().bubble.woof, after?: () => void): void {
   if (blockingMode) return;
-  const returnState = focusActive ? "focusGuard" : petParked ? "sitting" : "walking";
+  const returnState = focusActive ? "focusGuard" : "idle";
   setPetState("happy");
   showBubble({ id: "happy", message, autoDismissMs: 1800 });
   setTimeout(() => {
@@ -920,8 +832,6 @@ function startFocusMode(): void {
   focusActive = true;
   focusStartedAt = Date.now();
   blockingMode = null;
-  petParked = false;
-  store.set("petParked", false);
   setPetState("focusGuard");
   focusEndsAt = Date.now() + settings.focusDurationMinutes * 60 * 1000;
   sendToAll("app:snapshot", snapshot());
@@ -967,7 +877,7 @@ function stopFocusMode(completed: boolean): void {
   setTimeout(() => {
     if (!focusActive && !blockingMode) {
       hideBubble();
-      setPetState(petParked ? "sitting" : "walking");
+      setPetState("idle");
     }
   }, 2900);
   updateTrayMenu();
@@ -1052,7 +962,6 @@ function registerIpc(): void {
     startPetDrag(offset)
   );
   ipcMain.on("pet:drag-stop", stopPetDrag);
-  ipcMain.on("pet:resume-walking", resumeWalking);
   ipcMain.on("bubble:action", (_event, actionId: string) => handleBubbleAction(actionId));
   ipcMain.on("settings:update", (_event, partial: Partial<Settings>) => {
     setSettings({ ...getSettings(), ...partial });
@@ -1068,8 +977,6 @@ app.whenReady().then(() => {
   registerIpc();
   createPetWindow();
   createTray();
-  startMovement();
-  scheduleIdleBeat();
   scheduleReminderTimers();
   scheduleDistractionDetection();
   if (IS_DEV) {
@@ -1083,7 +990,6 @@ app.whenReady().then(() => {
 
 app.on("before-quit", () => {
   for (const timer of [
-    movementTimer,
     breakRunTimer,
     breakRunCountdownTimer,
     breakRunMovementTimer,
@@ -1092,7 +998,6 @@ app.on("before-quit", () => {
     focusTimer,
     distractionTimer,
     distractionStartupTimer,
-    idleTimer,
     bubbleTimer,
     dragTimer
   ]) {

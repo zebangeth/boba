@@ -31,7 +31,6 @@ const api = {
   triggerDemo: (trigger: DemoTrigger): void => ipcRenderer.send("demo:trigger", trigger),
   assetUrl: (relativePath: string): string =>
     pathToFileURL(join(process.cwd(), relativePath)).href,
-  resumeWalking: (): void => ipcRenderer.send("pet:resume-walking"),
   startFocus: (): void => ipcRenderer.send("focus:start"),
   stopFocus: (): void => ipcRenderer.send("focus:stop"),
   resetToday: (): void => ipcRenderer.send("stats:reset-today"),

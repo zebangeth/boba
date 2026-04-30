@@ -64,7 +64,6 @@ textarea {
   transform: scaleX(-1);
 }
 
-.state-walking,
 .state-breakRunning {
   animation: pet-bob 1.4s ease-in-out infinite;
 }

@@ -5,7 +5,6 @@ export type PetAppearanceId = "lovartPuppy" | "lineDog";
 export type PetFacing = "left" | "right";
 
 export type PetState =
-  | "walking"
   | "breakRunning"
   | "idle"
   | "sitting"
@@ -85,7 +84,6 @@ export type AppSnapshot = {
   petFacing: PetFacing;
   blockingMode: BlockingMode;
   focusActive: boolean;
-  petParked: boolean;
   dogVisible: boolean;
 };
 
