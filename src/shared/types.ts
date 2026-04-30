@@ -57,6 +57,8 @@ export type TodayStats = {
   focusWarnings: number;
 };
 
+export type StatsHistory = Record<string, TodayStats>;
+
 export type TimerStatus = {
   breakDueAt: number | null;
   hydrationDueAt: number | null;
@@ -76,6 +78,7 @@ export type DistractionStatus = {
 export type AppSnapshot = {
   settings: Settings;
   stats: TodayStats;
+  statsHistory: StatsHistory;
   timers: TimerStatus;
   distraction: DistractionStatus;
   petState: PetState;

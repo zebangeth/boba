@@ -15,6 +15,7 @@ import type {
   PetFacing,
   PetState,
   Settings,
+  StatsHistory,
   SpeechBubble,
   TodayStats
 } from "../shared/types";
@@ -42,6 +43,7 @@ type PetPosition = {
 type StoreSchema = {
   settings: Settings;
   stats: TodayStats;
+  statsHistory: StatsHistory;
   petPosition?: PetPosition;
   petParked: boolean;
 };
@@ -53,6 +55,7 @@ const store = new Store<StoreSchema>({
   defaults: {
     settings: DEFAULT_SETTINGS,
     stats: createEmptyStats(),
+    statsHistory: {},
     petParked: false
   }
 });
@@ -124,19 +127,49 @@ function setSettings(next: Settings): void {
   updateTrayMenu();
 }
 
+function getStatsHistory(): StatsHistory {
+  return store.get("statsHistory", {});
+}
+
+function isSameStats(left: TodayStats | undefined, right: TodayStats): boolean {
+  return Boolean(
+    left &&
+      left.date === right.date &&
+      left.breaksTaken === right.breaksTaken &&
+      left.watersLogged === right.watersLogged &&
+      left.focusMinutes === right.focusMinutes &&
+      left.focusWarnings === right.focusWarnings
+  );
+}
+
+function saveStatsToHistory(stats: TodayStats): void {
+  if (!stats.date) return;
+  const history = getStatsHistory();
+  if (isSameStats(history[stats.date], stats)) return;
+  store.set("statsHistory", {
+    ...history,
+    [stats.date]: stats
+  });
+}
+
 function getStats(): TodayStats {
+  const today = todayKey();
   const stats = store.get("stats", createEmptyStats());
-  if (stats.date !== todayKey()) {
-    const reset = createEmptyStats();
-    store.set("stats", reset);
-    return reset;
+  if (stats.date !== today) {
+    saveStatsToHistory(stats);
+    const current = getStatsHistory()[today] ?? createEmptyStats(today);
+    store.set("stats", current);
+    saveStatsToHistory(current);
+    return current;
   }
+  saveStatsToHistory(stats);
   return stats;
 }
 
 function updateStats(mutator: (stats: TodayStats) => TodayStats): void {
   const next = mutator(getStats());
   store.set("stats", next);
+  saveStatsToHistory(next);
   sendToAll("stats:updated", next);
 }
 
@@ -144,6 +177,7 @@ function resetTodayStats(): void {
   breakMutedToday = false;
   const reset = createEmptyStats();
   store.set("stats", reset);
+  saveStatsToHistory(reset);
   sendToAll("stats:updated", reset);
 }
 
@@ -151,6 +185,7 @@ function snapshot(): AppSnapshot {
   return {
     settings: getSettings(),
     stats: getStats(),
+    statsHistory: getStatsHistory(),
     timers: {
       breakDueAt,
       hydrationDueAt,

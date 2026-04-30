@@ -14,6 +14,7 @@ export function useSnapshot(): AppSnapshot {
   const [snapshot, setSnapshot] = useState<AppSnapshot>({
     settings: DEFAULT_SETTINGS,
     stats: initialStats,
+    statsHistory: {},
     timers: {
       breakDueAt: null,
       hydrationDueAt: null,
