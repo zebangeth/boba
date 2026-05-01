@@ -1,6 +1,4 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { join } from "node:path";
-import { pathToFileURL } from "node:url";
 import type {
   AppSnapshot,
   DemoTrigger,
@@ -31,8 +29,7 @@ const api = {
   triggerDemo: (trigger: DemoTrigger): void => ipcRenderer.send("demo:trigger", trigger),
   isPackaged: !process.defaultApp,
   assetUrl: (relativePath: string): string => {
-    const base = process.defaultApp ? process.cwd() : process.resourcesPath;
-    return pathToFileURL(join(base, relativePath)).href;
+    return `pawpal-asset://asset/${encodeURIComponent(relativePath)}`;
   },
   startFocus: (): void => ipcRenderer.send("focus:start"),
   stopFocus: (): void => ipcRenderer.send("focus:stop"),

@@ -1,4 +1,6 @@
-import { app, BrowserWindow, ipcMain, Menu, screen, Tray } from "electron";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+import { app, BrowserWindow, ipcMain, Menu, net, protocol, screen, Tray } from "electron";
 import Store from "electron-store";
 import {
   createEmptyStats,
@@ -995,7 +997,18 @@ function registerIpc(): void {
   ipcMain.on("stats:reset-today", resetTodayStats);
 }
 
+protocol.registerSchemesAsPrivileged([
+  { scheme: "pawpal-asset", privileges: { bypassCSP: true, supportFetchAPI: true } }
+]);
+
 app.whenReady().then(() => {
+  protocol.handle("pawpal-asset", (request) => {
+    const url = new URL(request.url);
+    const relativePath = decodeURIComponent(url.pathname.replace(/^\/+/, ""));
+    const base = app.isPackaged ? process.resourcesPath : process.cwd();
+    return net.fetch(pathToFileURL(join(base, relativePath)).href);
+  });
+
   getStats();
   registerIpc();
   createPetWindow();
