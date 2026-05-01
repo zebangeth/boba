@@ -112,7 +112,7 @@ export function PetView(): JSX.Element {
         </section>
       ) : null}
 
-      {snapshot.focusActive && state === "focusGuard" ? (
+      {snapshot.focusActive ? (
         <div className="focus-badge">
           <span>{labels.focus}</span>
           <strong>{formatFocusCountdown(snapshot.timers.focusEndsAt, now)}</strong>

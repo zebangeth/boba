@@ -5,15 +5,15 @@ export type PetAppearanceId = "lovartPuppy" | "lineDog";
 export type PetFacing = "left" | "right";
 
 export type PetState =
-  | "breakRunning"
   | "idle"
   | "sitting"
   | "happy"
-  | "knocking"
-  | "thirsty"
+  | "breakPrompt"
+  | "breakRunning"
+  | "hydrationPrompt"
   | "drinking"
   | "focusGuard"
-  | "annoyed"
+  | "focusAlert"
   | "sad"
   | "sleeping";
 

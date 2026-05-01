@@ -758,7 +758,7 @@ function triggerBreakReminder(fromDemo: boolean): void {
   blockingMode = "break";
   breakDueAt = null;
   publishSnapshot();
-  setPetState("knocking");
+  setPetState("breakPrompt");
   const labels = text();
   showBubble({
     id: "break",
@@ -780,7 +780,7 @@ function triggerHydrationReminder(fromDemo: boolean): void {
   blockingMode = "hydration";
   hydrationDueAt = null;
   publishSnapshot();
-  setPetState("thirsty");
+  setPetState("hydrationPrompt");
   const labels = text();
   showBubble({
     id: "hydration",
@@ -798,8 +798,8 @@ function triggerFocusWarning(): void {
   if (!focusActive) startFocusMode();
   blockingMode = "focusWarning";
   updateStats((stats) => ({ ...stats, focusWarnings: stats.focusWarnings + 1 }));
+  setPetState("focusAlert");
   sendToAll("app:snapshot", snapshot());
-  setPetState("focusGuard");
   const labels = text();
   showBubble({
     id: "focus-warning",
@@ -899,7 +899,7 @@ function handleBubbleAction(actionId: string): void {
     breakDueAt = null;
     blockingMode = null;
     sendToAll("app:snapshot", snapshot());
-    setPetState("annoyed");
+    setPetState("sad");
     showBubble({ id: "break-muted", message: text().bubble.breakIgnore, autoDismissMs: 2600 });
     setTimeout(resumeLongTermState, 2700);
     return;

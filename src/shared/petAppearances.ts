@@ -26,15 +26,15 @@ export const PET_APPEARANCES: Record<PetAppearanceId, PetAppearanceManifest> = {
       isPlaceholder: true
     },
     states: {
-      breakRunning: { path: "lovart_footage/puppy/1 - playing outside.gif" },
       idle: { path: "lovart_footage/puppy/standing pose.gif" },
       sitting: { path: "lovart_footage/puppy/3 - welcome to work.gif" },
       happy: { path: "lovart_footage/puppy/1 - waiting for playing outside.gif" },
-      knocking: { path: "lovart_footage/puppy/1 - waiting for playing outside.gif" },
-      thirsty: { path: "lovart_footage/water_gifs/want_water.gif" },
+      breakPrompt: { path: "lovart_footage/puppy/1 - waiting for playing outside.gif" },
+      breakRunning: { path: "lovart_footage/puppy/1 - playing outside.gif" },
+      hydrationPrompt: { path: "lovart_footage/water_gifs/want_water.gif" },
       drinking: { path: "lovart_footage/water_gifs/got_water.gif" },
       focusGuard: { path: "lovart_footage/puppy/standing pose4.gif" },
-      annoyed: { path: "lovart_footage/puppy/4 - sleeping.gif" },
+      focusAlert: { path: "lovart_footage/puppy/standing pose4.gif", isPlaceholder: true },
       sad: { path: "lovart_footage/puppy/4 - sleeping.gif", isPlaceholder: true },
       sleeping: { path: "lovart_footage/puppy/4 - sleeping.gif", isPlaceholder: true }
     }
@@ -50,15 +50,15 @@ export const PET_APPEARANCES: Record<PetAppearanceId, PetAppearanceManifest> = {
       isPlaceholder: true
     },
     states: {
-      breakRunning: { path: lineDog("线条小狗第12弹_爬行.gif"), isPlaceholder: true },
       idle: { path: lineDog("线条小狗第8弹_无聊.gif") },
       sitting: { path: lineDog("线条小狗第11弹_趴趴.gif"), isPlaceholder: true },
       happy: { path: lineDog("线条小狗第3弹_开心.gif") },
-      knocking: { path: lineDog("线条小狗第12弹_醒醒.gif"), isPlaceholder: true },
-      thirsty: { path: lineDog("线条小狗第19弹_喝咖啡.gif"), isPlaceholder: true },
+      breakPrompt: { path: lineDog("线条小狗第12弹_醒醒.gif"), isPlaceholder: true },
+      breakRunning: { path: lineDog("线条小狗第12弹_爬行.gif"), isPlaceholder: true },
+      hydrationPrompt: { path: lineDog("线条小狗第19弹_喝咖啡.gif"), isPlaceholder: true },
       drinking: { path: lineDog("线条小狗第16弹_吃饭.gif"), isPlaceholder: true },
       focusGuard: { path: lineDog("线条小狗第17弹_工作.gif") },
-      annoyed: { path: lineDog("线条小狗第13弹_生气.gif") },
+      focusAlert: { path: lineDog("线条小狗第12弹_醒醒.gif"), isPlaceholder: true },
       sad: { path: lineDog("线条小狗第20弹_难过.gif") },
       sleeping: { path: lineDog("线条小狗第10弹_睡觉.gif") }
     }

@@ -18,7 +18,7 @@
 - 每个 GIF 四周要留出足够 padding，避免 CSS 上下浮动、跳跃、摇晃或镜像时被裁切。
 - 移动类素材默认应面朝右。小狗向左移动时，renderer 会用 CSS 镜像。
 - 长时间状态需要能自然循环，例如 `idle`、`focusGuard`、`sleeping`。
-- 短反馈状态可以更夸张，例如 `happy`、`annoyed`，但也要能被保持 1 到 3 秒而不突兀。
+- 短反馈状态可以更夸张，例如 `happy`、`sad`、`focusAlert`，但也要能被保持 1 到 3 秒而不突兀。
 - 文件命名优先使用语义名称，例如 `idle.gif`、`break-running.gif`、`focus-guard.gif`。
 
 推荐的新宠物素材目录结构：
@@ -30,11 +30,11 @@ assets/pets/<pet-id>/
   idle.gif
   sitting.gif
   happy.gif
-  knocking.gif
-  thirsty.gif
+  break-prompt.gif
+  hydration-prompt.gif
   drinking.gif
   focus-guard.gif
-  annoyed.gif
+  focus-alert.gif
   sad.gif
   sleeping.gif
 ```
@@ -47,16 +47,16 @@ assets/pets/<pet-id>/
 
 | 状态 | 什么时候触发 | 动画意图 | 素材要求 |
 | --- | --- | --- | --- |
-| `breakRunning` | 用户接受休息提醒后触发。主动休息阶段持续 60 秒，或用户点击“我回来了”后结束。 | 更活跃、更有存在感的奔跑或玩耍，促使用户离开屏幕。 | 面朝右。不要复用太安静的普通走路素材。 |
 | `idle` | 默认空闲状态。小狗可见、未专注、没有阻塞提醒时触发；拖拽结束后也回到这个状态。 | 呼吸、眨眼、张望、发呆、轻微等待。 | 应该克制，不要看起来像提醒或警告。 |
-| `sitting` | 预留的稳定待命状态。未来可用于手动坐下、低活跃或长时间陪伴场景。 | 坐下、趴下、安静待命。 | 适合作为“待在这里”的稳定状态。 |
+| `sitting` | 拖拽小狗时的临时状态。未来也可用于手动坐下或长时间陪伴场景。 | 坐下、趴下、安静待命。 | 适合作为“被移动/待在这里”的稳定状态。 |
 | `happy` | 点击小狗、喝水成功后的反馈、专注完成或取消、休息奔跑完成、Demo Happy。 | 开心、摇尾巴、庆祝、跳跃、爱心。 | 短反馈状态。CSS 会额外加轻微跳跃。 |
-| `knocking` | 休息提醒弹出时，用户还没有选择操作。 | 敲门、戳戳、等待出去玩、吸引注意。 | 要表达“请回应我”，但不要太凶。CSS 会加轻微敲击感。 |
-| `thirsty` | 喝水提醒弹出时，用户还没有确认喝水。 | 口渴、想喝水、举杯、讨水、提醒补水。 | 最好一眼能看出和补水有关。 |
+| `breakPrompt` | 休息提醒弹出时，用户还没有选择操作。 | 敲门、戳戳、等待出去玩、吸引注意。 | 要表达“请回应我”，但不要太凶。CSS 会加轻微敲击感。 |
+| `breakRunning` | 用户接受休息提醒后触发。主动休息阶段持续 60 秒，或用户点击“我回来了”后结束。 | 更活跃、更有存在感的奔跑或玩耍，促使用户离开屏幕。 | 面朝右。不要复用太安静的普通走路素材。 |
+| `hydrationPrompt` | 喝水提醒弹出时，用户还没有确认喝水。 | 口渴、想喝水、举杯、讨水、提醒补水。 | 最好一眼能看出和补水有关。 |
 | `drinking` | 用户确认“我喝水了”之后立即触发。 | 喝水、收到水、满足、补水成功。 | 通常会在随后切到 `happy`。 |
-| `focusGuard` | 专注模式启动、专注警告、用户点“回去工作”后触发。 | 守卫、警觉、工作中、认真盯着、帮用户守住专注。 | 这是专注模式的核心形象，要坚定但不要吓人。 |
-| `annoyed` | 用户选择今天不再休息提醒时触发。未来也可用于忽略提醒等负反馈。 | 有点生气、担心、失望、郁闷。 | 不要过度敌意，整体仍然是陪伴感。 |
-| `sad` | 预留状态。未来可用于长时间忽略、低活跃、负向反馈或关怀场景。当前主流程还没有完整接入。 | 难过、担心、哭、委屈。 | 有真实素材最好，没有则用同宠物 placeholder。 |
+| `focusGuard` | 专注模式启动、用户点“回去工作”后触发。 | 守卫、警觉、工作中、认真盯着、帮用户守住专注。 | 这是专注模式的核心形象，要坚定但不要吓人。 |
+| `focusAlert` | 专注期间检测到用户分心时触发，直到用户选择“回去工作”或结束专注。 | 提醒、警觉、叫醒、轻微施压。 | 要比 `focusGuard` 更有注意力，但不要过度负面。CSS 会加轻微 alert 动效。 |
+| `sad` | 用户选择今天不再休息提醒时触发。未来也可用于长时间忽略、低活跃、负向反馈或关怀场景。 | 难过、担心、委屈、轻微失落。 | 不要过度敌意，整体仍然是陪伴感。 |
 | `sleeping` | 预留状态。未来可用于夜间、长时间 idle、勿扰、休眠。当前主流程还没有完整接入。 | 睡觉、休息、晚安、低能量循环。 | 有真实素材最好，没有则用同宠物 placeholder。 |
 
 ## 当前触发流程
@@ -68,14 +68,14 @@ assets/pets/<pet-id>/
 | 普通空闲 | `idle`，位置保持固定 |
 | 拖拽小狗 | 非专注时拖拽用 `sitting`，专注时拖拽用 `focusGuard` |
 | 点击小狗 | `happy`，然后回到 `focusGuard` 或 `idle` |
-| 休息提醒 | 提醒弹窗期间使用 `knocking` |
+| 休息提醒 | 提醒弹窗期间使用 `breakPrompt` |
 | 确认休息 | `breakRunning`，结束后 `happy`，再回到 `idle` |
 | 稍后休息 | 回到长期状态，通常是 `idle` 或 `focusGuard` |
-| 今天不再提醒休息 | `annoyed`，然后回到长期状态 |
-| 喝水提醒 | 提醒弹窗期间使用 `thirsty` |
+| 今天不再提醒休息 | `sad`，然后回到长期状态 |
+| 喝水提醒 | 提醒弹窗期间使用 `hydrationPrompt` |
 | 确认喝水 | `drinking`，然后 `happy`，再回到长期状态 |
 | 开始专注 | `focusGuard` |
-| 分心警告 | `focusGuard`，同时显示警告气泡 |
+| 分心警告 | `focusAlert`，同时显示警告气泡 |
 | 回去工作 | `focusGuard` |
 | 结束或完成专注 | `happy`，然后回到 `idle` |
 | Demo Happy | `happy` |
@@ -85,8 +85,8 @@ assets/pets/<pet-id>/
 给一个新宠物形象准备素材时，建议按这个顺序补齐：
 
 1. 核心循环：`idle`、`sitting`
-2. 核心产品流程：`knocking`、`breakRunning`、`thirsty`、`drinking`、`focusGuard`、`happy`
-3. 负反馈和预留状态：`annoyed`、`sad`、`sleeping`
+2. 核心产品流程：`breakPrompt`、`breakRunning`、`hydrationPrompt`、`drinking`、`focusGuard`、`focusAlert`、`happy`
+3. 负反馈和预留状态：`sad`、`sleeping`
 4. fallback：一个属于同一宠物形象的中性 GIF
 
 fallback 必须来自同一个宠物形象。不要让某个宠物缺素材时退回到另一个宠物形象。
@@ -156,15 +156,15 @@ export const PET_APPEARANCES = {
       isPlaceholder: true
     },
     states: {
-      breakRunning: { path: "assets/pets/example/break-running.gif" },
       idle: { path: "assets/pets/example/idle.gif" },
       sitting: { path: "assets/pets/example/sitting.gif" },
       happy: { path: "assets/pets/example/happy.gif" },
-      knocking: { path: "assets/pets/example/knocking.gif" },
-      thirsty: { path: "assets/pets/example/thirsty.gif" },
+      breakPrompt: { path: "assets/pets/example/break-prompt.gif" },
+      breakRunning: { path: "assets/pets/example/break-running.gif" },
+      hydrationPrompt: { path: "assets/pets/example/hydration-prompt.gif" },
       drinking: { path: "assets/pets/example/drinking.gif" },
       focusGuard: { path: "assets/pets/example/focus-guard.gif" },
-      annoyed: { path: "assets/pets/example/annoyed.gif" },
+      focusAlert: { path: "assets/pets/example/focus-alert.gif" },
       sad: { path: "assets/pets/example/sad.gif" },
       sleeping: { path: "assets/pets/example/sleeping.gif" }
     }
@@ -183,9 +183,10 @@ export const PET_APPEARANCES = {
 - 语音气泡不会遮住宠物最关键的身体或表情。
 - 同一宠物的所有状态视觉尺寸一致。
 - 切换状态时宠物不会突然大幅跳动、缩放或偏移。
-- Demo Break 会依次看到 `knocking`、`breakRunning`、`happy`。
-- Demo Hydration 会依次看到 `thirsty`、`drinking`、`happy`。
+- Demo Break 会依次看到 `breakPrompt`、`breakRunning`、`happy`。
+- Demo Hydration 会依次看到 `hydrationPrompt`、`drinking`、`happy`。
 - Focus Mode 会显示 `focusGuard`。
+- Demo Focus Warning 会显示 `focusAlert`。
 - Demo Happy 会显示 `happy`。
 - placeholder 状态都已经在 manifest 里明确标记。
 
