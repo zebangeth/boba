@@ -26,8 +26,7 @@ export const DEFAULT_SETTINGS: Settings = {
     "小红书",
     "微博",
     "抖音"
-  ],
-  soundEnabled: false
+  ]
 };
 
 export function todayKey(date = new Date()): string {

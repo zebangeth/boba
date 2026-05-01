@@ -297,16 +297,6 @@ export function SettingsView(): JSX.Element {
             ))}
           </div>
         </div>
-        <Row
-          label={labels.enableSoundEffects}
-          control={
-            <ToggleControl
-              checked={draft.soundEnabled}
-              onChange={(soundEnabled) => updateDraft({ soundEnabled })}
-              ariaLabel={labels.enableSoundEffects}
-            />
-          }
-        />
       </section>
 
       <section className="prefs__group">

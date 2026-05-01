@@ -48,7 +48,6 @@ export type Settings = {
   distractionGraceSeconds: number;
   distractionBlockedApps: string[];
   distractionBlockedKeywords: string[];
-  soundEnabled: boolean;
 };
 
 export type TodayStats = {
