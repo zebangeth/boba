@@ -29,6 +29,7 @@ const api = {
   updateSettings: (settings: Partial<Settings>): void =>
     ipcRenderer.send("settings:update", settings),
   triggerDemo: (trigger: DemoTrigger): void => ipcRenderer.send("demo:trigger", trigger),
+  isPackaged: !process.defaultApp,
   assetUrl: (relativePath: string): string =>
     pathToFileURL(join(process.cwd(), relativePath)).href,
   startFocus: (): void => ipcRenderer.send("focus:start"),

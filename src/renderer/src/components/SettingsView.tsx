@@ -425,18 +425,20 @@ export function SettingsView(): JSX.Element {
         </div>
       </section>
 
-      <section className="prefs__group">
-        <h2 className="prefs__group-title">{labels.testTools}</h2>
-        <div className="test-tools">
-          <DemoChip trigger="break" label={labels.demoBreak} />
-          <DemoChip trigger="hydration" label={labels.demoWater} />
-          <DemoChip trigger="focusWarning" label={labels.demoFocusWarning} />
-          <DemoChip trigger="happy" label={labels.demoHappy} />
-          <button type="button" className="pref-chip-button" onClick={window.pawse.resetToday}>
-            {labels.resetToday}
-          </button>
-        </div>
-      </section>
+      {!window.pawse.isPackaged && (
+        <section className="prefs__group">
+          <h2 className="prefs__group-title">{labels.testTools}</h2>
+          <div className="test-tools">
+            <DemoChip trigger="break" label={labels.demoBreak} />
+            <DemoChip trigger="hydration" label={labels.demoWater} />
+            <DemoChip trigger="focusWarning" label={labels.demoFocusWarning} />
+            <DemoChip trigger="happy" label={labels.demoHappy} />
+            <button type="button" className="pref-chip-button" onClick={window.pawse.resetToday}>
+              {labels.resetToday}
+            </button>
+          </div>
+        </section>
+      )}
 
       <section className="prefs__group prefs__group--quiet">
         <button

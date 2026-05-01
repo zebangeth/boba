@@ -105,7 +105,7 @@ export const I18N = {
       title: "设置",
       welcomeTitle: "欢迎使用 Pawse",
       welcomeCopy:
-        "Pawse 会住在菜单栏和屏幕底部。你可以先用演示按钮测试休息、喝水和专注提醒；如果要启用分心检测，请在 macOS 系统设置里允许辅助功能权限。",
+        "Pawse 会住在菜单栏和屏幕底部，定时提醒你休息、喝水和保持专注。如果要启用分心检测，请在 macOS 系统设置里允许辅助功能权限。",
       dismissWelcome: "知道了",
       appearance: "外观",
       quickActions: "快捷操作",
@@ -276,7 +276,7 @@ export const I18N = {
       title: "Settings",
       welcomeTitle: "Welcome to Pawse",
       welcomeCopy:
-        "Pawse lives in the menu bar and near the bottom of your screen. Try the demo buttons for break, hydration, and focus flows; enable macOS accessibility permissions before using distraction detection.",
+        "Pawse lives in the menu bar and near the bottom of your screen. It reminds you to take breaks, drink water, and stay focused. Enable macOS accessibility permissions before using distraction detection.",
       dismissWelcome: "Got it",
       appearance: "Appearance",
       quickActions: "Quick Actions",
