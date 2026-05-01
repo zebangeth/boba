@@ -61,7 +61,6 @@ export const PET_APPEARANCES: Record<PetAppearanceId, PetAppearanceManifest> = {
           lineDog("idle", "线条小狗第12弹_无聊.gif"),
           lineDog("idle", "线条小狗第12弹_晃脚脚.gif"),
           lineDog("idle", "线条小狗第1弹_摆烂.gif"),
-          lineDog("idle", "线条小狗第7弹_开心.gif"),
           lineDog("idle", "线条小狗第9弹_甩耳朵.gif")
         ]
       },

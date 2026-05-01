@@ -507,8 +507,6 @@ function startPetDrag(offset: { offsetX: number; offsetY: number }): void {
     y: Math.min(Math.max(Math.round(offset.offsetY), 0), PET_WINDOW.height)
   };
   if (dragTimer) clearInterval(dragTimer);
-  hideBubble();
-  setPetState(focusActive ? "focusGuard" : "sitting");
   movePetWithCursor();
   dragTimer = setInterval(movePetWithCursor, 16);
 }
@@ -517,14 +515,7 @@ function stopPetDrag(): void {
   if (!dragTimer) return;
   clearInterval(dragTimer);
   dragTimer = null;
-  if (focusActive) {
-    persistPetPosition();
-    setPetState("focusGuard");
-    sendToAll("app:snapshot", snapshot());
-    return;
-  }
   persistPetPosition();
-  setPetState("idle");
   sendToAll("app:snapshot", snapshot());
 }
 
