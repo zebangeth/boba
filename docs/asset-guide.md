@@ -274,5 +274,5 @@ export const PET_APPEARANCES = {
 
 | Appearance ID | 名称 | 说明 |
 | --- | --- | --- |
-| `lovartPuppy` | Lovart 小狗 / Lovart Puppy | 当前主 Demo 宠物。部分预留状态仍使用 placeholder。 |
+| `lovartPuppy` | 金毛 puppy / Golden Puppy | 当前主 Demo 宠物。素材位于 `pet_assets/金毛 puppy/`，部分预留状态仍使用 placeholder 或状态级 fallback。 |
 | `lineDog` | 线条小狗 / Line Dog | 第二个内置宠物。部分状态使用语义接近的表情包 GIF 作为 placeholder。 |

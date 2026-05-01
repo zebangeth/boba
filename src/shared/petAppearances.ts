@@ -13,6 +13,8 @@ export type PetAppearanceManifest = {
   states: Partial<Record<PetState, PetAssetDefinition>>;
 };
 
+const goldenPuppy = (state: PetState, name: string): string =>
+  `pet_assets/金毛 puppy/${state}/${name}`;
 const lineDog = (state: PetState, name: string): string => `pet_assets/线条小狗/${state}/${name}`;
 
 const STATE_FALLBACKS: Partial<Record<PetState, PetState>> = {
@@ -25,28 +27,39 @@ export const PET_APPEARANCES: Record<PetAppearanceId, PetAppearanceManifest> = {
   lovartPuppy: {
     id: "lovartPuppy",
     label: {
-      "zh-CN": "Lovart 小狗",
-      en: "Lovart Puppy"
+      "zh-CN": "金毛 puppy",
+      en: "Golden Puppy"
     },
     fallback: {
-      path: "lovart_footage/puppy/standing pose.gif",
+      path: goldenPuppy("idle", "standing pose.gif"),
       isPlaceholder: true
     },
     states: {
-      idle: { path: "lovart_footage/puppy/standing pose.gif" },
-      sitting: { path: "lovart_footage/puppy/3 - welcome to work.gif" },
-      happy: { path: "lovart_footage/puppy/1 - waiting for playing outside.gif" },
-      breakPrompt: { path: "lovart_footage/puppy/1 - waiting for playing outside.gif" },
+      idle: {
+        path: [
+          goldenPuppy("idle", "standing pose.gif"),
+          goldenPuppy("idle", "standing pose2.gif"),
+          goldenPuppy("idle", "standing pose3.gif")
+        ]
+      },
+      sitting: { path: goldenPuppy("sitting", "3 - welcome to work.gif") },
+      happy: {
+        path: [
+          goldenPuppy("happy", "1 - waiting for playing outside.gif"),
+          goldenPuppy("happy", "3 - welcome to work.gif")
+        ]
+      },
+      breakPrompt: { path: goldenPuppy("breakPrompt", "1 - waiting for playing outside.gif") },
       breakRunning: {
-        path: "lovart_footage/puppy/1 - playing outside.gif",
+        path: goldenPuppy("breakRunning", "1 - playing outside.gif"),
         replayIntervalMs: 4500
       },
-      hydrationPrompt: { path: "lovart_footage/water_gifs/want_water.gif" },
-      drinking: { path: "lovart_footage/water_gifs/got_water.gif" },
-      focusGuard: { path: "lovart_footage/puppy/standing pose4.gif" },
-      focusAlert: { path: "lovart_footage/puppy/standing pose4.gif", isPlaceholder: true },
-      sad: { path: "lovart_footage/puppy/4 - sleeping.gif", isPlaceholder: true },
-      sleeping: { path: "lovart_footage/puppy/4 - sleeping.gif", isPlaceholder: true }
+      hydrationPrompt: { path: goldenPuppy("hydrationPrompt", "want_water.gif") },
+      drinking: { path: goldenPuppy("drinking", "got_water.gif") },
+      focusGuard: { path: goldenPuppy("focusGuard", "standing pose4.gif") },
+      focusAlert: { path: goldenPuppy("focusAlert", "2 - standing reminder.gif") },
+      sad: { path: goldenPuppy("sad", "4 - sleeping.gif"), isPlaceholder: true },
+      sleeping: { path: goldenPuppy("sleeping", "4 - sleeping.gif"), isPlaceholder: true }
     }
   },
   lineDog: {
