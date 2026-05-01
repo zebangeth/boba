@@ -416,8 +416,7 @@ function actionMenuItems(): Electron.MenuItemConstructorOptions[] {
     { label: labels.demoFocusWarning, click: () => triggerDemo("focusWarning") },
     { label: labels.demoHappyReaction, click: () => triggerDemo("happy") },
     { type: "separator" },
-    { label: labels.settings, click: createSettingsWindow },
-    { label: labels.resetToday, click: resetTodayStats }
+    { label: labels.settings, click: createSettingsWindow }
   ];
 }
 
