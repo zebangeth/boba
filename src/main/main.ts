@@ -5,7 +5,7 @@ import {
   DEFAULT_SETTINGS,
   todayKey
 } from "../shared/constants";
-import { i18n, resolveLanguage } from "../shared/i18n";
+import { i18n, pick, resolveLanguage } from "../shared/i18n";
 import { resolvePetAppearanceId } from "../shared/petAppearances";
 import type {
   AppSnapshot,
@@ -80,6 +80,7 @@ let focusEndsAt: number | null = null;
 let bubbleTimer: NodeJS.Timeout | null = null;
 let dragTimer: NodeJS.Timeout | null = null;
 let breakRunVelocity: PetPosition = { x: 0, y: 0 };
+let breakRunFormatter: ((seconds: number) => string) | null = null;
 let nextBreakRunTurnAt = 0;
 let breakMutedToday = false;
 let dragOffset: PetPosition = { x: 0, y: 0 };
@@ -410,11 +411,15 @@ function actionMenuItems(): Electron.MenuItemConstructorOptions[] {
         else startFocusMode();
       }
     },
-    { type: "separator" },
-    { label: labels.demoBreakReminder, click: () => triggerDemo("break") },
-    { label: labels.demoHydrationReminder, click: () => triggerDemo("hydration") },
-    { label: labels.demoFocusWarning, click: () => triggerDemo("focusWarning") },
-    { label: labels.demoHappyReaction, click: () => triggerDemo("happy") },
+    ...(app.isPackaged
+      ? []
+      : [
+          { type: "separator" as const },
+          { label: labels.demoBreakReminder, click: () => triggerDemo("break") },
+          { label: labels.demoHydrationReminder, click: () => triggerDemo("hydration") },
+          { label: labels.demoFocusWarning, click: () => triggerDemo("focusWarning") },
+          { label: labels.demoHappyReaction, click: () => triggerDemo("happy") }
+        ]),
     { type: "separator" },
     { label: labels.settings, click: createSettingsWindow }
   ];
@@ -468,11 +473,15 @@ function showPetContextMenu(): void {
         else startFocusMode();
       }
     },
-    { type: "separator" },
-    { label: labels.demoBreakReminder, click: () => triggerDemo("break") },
-    { label: labels.demoHydrationReminder, click: () => triggerDemo("hydration") },
-    { label: labels.demoFocusWarning, click: () => triggerDemo("focusWarning") },
-    { label: labels.demoHappyReaction, click: () => triggerDemo("happy") },
+    ...(app.isPackaged
+      ? []
+      : [
+          { type: "separator" as const },
+          { label: labels.demoBreakReminder, click: () => triggerDemo("break") },
+          { label: labels.demoHydrationReminder, click: () => triggerDemo("hydration") },
+          { label: labels.demoFocusWarning, click: () => triggerDemo("focusWarning") },
+          { label: labels.demoHappyReaction, click: () => triggerDemo("happy") }
+        ]),
     { type: "separator" },
     {
       label: labels.hideDog,
@@ -536,9 +545,10 @@ function clearBreakRunTimers(): void {
 function showBreakRunCountdown(endsAt: number): void {
   const labels = text();
   const remainingSeconds = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
+  const formatter = breakRunFormatter ?? pick(labels.bubble.breakRun);
   showBubble({
     id: "break-run",
-    message: labels.bubble.breakRun(remainingSeconds),
+    message: formatter(remainingSeconds),
     actions: [{ id: "break-run:done", label: labels.actions.breakRunDone, kind: "primary" }]
   });
 }
@@ -604,9 +614,10 @@ function movePetForBreakRun(): void {
 
 function finishBreakRun(): void {
   clearBreakRunTimers();
+  breakRunFormatter = null;
   blockingMode = null;
   hideBubble();
-  showBubble({ id: "break-run-complete", message: text().bubble.breakRunComplete, autoDismissMs: 2200 });
+  showBubble({ id: "break-run-complete", message: pick(text().bubble.breakRunComplete), autoDismissMs: 2200 });
   setPetState("breakDone");
   setTimeout(() => {
     if (!blockingMode && !focusActive) {
@@ -623,6 +634,7 @@ function startBreakRun(): void {
   clearBreakRunTimers();
   blockingMode = "breakRun";
   breakDueAt = null;
+  breakRunFormatter = pick(text().bubble.breakRun);
   breakRunVelocity = chooseBreakRunVelocity();
   nextBreakRunTurnAt = Date.now();
   setPetState("breakRunning");
@@ -748,7 +760,7 @@ function resumeLongTermState(): void {
   sendToAll("app:snapshot", snapshot());
 }
 
-function happyFeedback(message: string | null = text().bubble.woof, after?: () => void): void {
+function happyFeedback(message: string | null = pick(text().bubble.woof), after?: () => void): void {
   if (blockingMode) return;
   const returnState = focusActive ? "focusGuard" : "idle";
   setPetState("happy");
@@ -776,7 +788,7 @@ function triggerBreakReminder(fromDemo: boolean): void {
   const labels = text();
   showBubble({
     id: "break",
-    message: labels.bubble.breakReminder,
+    message: pick(labels.bubble.breakReminder),
     actions: [
       { id: "break:done", label: labels.actions.breakDone, kind: "primary" },
       { id: "break:snooze", label: labels.actions.breakSnooze },
@@ -798,7 +810,7 @@ function triggerHydrationReminder(fromDemo: boolean): void {
   const labels = text();
   showBubble({
     id: "hydration",
-    message: labels.bubble.hydrationReminder,
+    message: pick(labels.bubble.hydrationReminder),
     actions: [
       { id: "hydration:done", label: labels.actions.hydrationDone, kind: "primary" },
       { id: "hydration:snooze", label: labels.actions.hydrationSnooze }
@@ -817,7 +829,7 @@ function triggerFocusWarning(): void {
   const labels = text();
   showBubble({
     id: "focus-warning",
-    message: labels.bubble.focusWarning,
+    message: pick(labels.bubble.focusWarning),
     actions: [
       { id: "focus:back", label: labels.actions.focusBack, kind: "primary" },
       { id: "focus:end", label: labels.actions.focusEnd }
@@ -837,7 +849,7 @@ function startFocusMode(): void {
   sendToAll("app:snapshot", snapshot());
   showBubble({
     id: "focus-start",
-    message: text().bubble.focusStart(settings.focusDurationMinutes),
+    message: pick(text().bubble.focusStart)(settings.focusDurationMinutes),
     autoDismissMs: 4500
   });
   if (focusTimer) clearTimeout(focusTimer);
@@ -870,7 +882,7 @@ function stopFocusMode(completed: boolean): void {
   setPetState("focusDone");
   showBubble({
     id: "focus-complete",
-    message: completed ? text().bubble.focusComplete : text().bubble.focusCancelled,
+    message: completed ? pick(text().bubble.focusComplete) : pick(text().bubble.focusCancelled),
     autoDismissMs: 2800
   });
   setTimeout(() => {
@@ -887,7 +899,7 @@ function triggerDemo(trigger: DemoTrigger): void {
   if (trigger === "break") triggerBreakReminder(true);
   if (trigger === "hydration") triggerHydrationReminder(true);
   if (trigger === "focusWarning") triggerFocusWarning();
-  if (trigger === "happy") happyFeedback(text().bubble.woof);
+  if (trigger === "happy") happyFeedback(pick(text().bubble.woof));
 }
 
 function handleBubbleAction(actionId: string): void {
@@ -914,7 +926,7 @@ function handleBubbleAction(actionId: string): void {
     blockingMode = null;
     sendToAll("app:snapshot", snapshot());
     setPetState("sad");
-    showBubble({ id: "break-muted", message: text().bubble.breakIgnore, autoDismissMs: 2600 });
+    showBubble({ id: "break-muted", message: pick(text().bubble.breakIgnore), autoDismissMs: 2600 });
     setTimeout(resumeLongTermState, 2700);
     return;
   }
@@ -927,7 +939,7 @@ function handleBubbleAction(actionId: string): void {
     setTimeout(() => {
       if (blockingMode) return;
       setPetState("hydrationDone");
-      showBubble({ id: "hydration-complete", message: text().bubble.hydrationDone, autoDismissMs: 1800 });
+      showBubble({ id: "hydration-complete", message: pick(text().bubble.hydrationDone), autoDismissMs: 1800 });
       setTimeout(() => {
         hideBubble();
         setPetState(focusActive ? "focusGuard" : "idle");
@@ -948,7 +960,7 @@ function handleBubbleAction(actionId: string): void {
     blockingMode = null;
     sendToAll("app:snapshot", snapshot());
     setPetState("focusGuard");
-    showBubble({ id: "focus-back", message: text().bubble.focusBack, autoDismissMs: 1800 });
+    showBubble({ id: "focus-back", message: pick(text().bubble.focusBack), autoDismissMs: 1800 });
     setTimeout(() => {
       if (focusActive && !blockingMode) hideBubble();
     }, 1900);

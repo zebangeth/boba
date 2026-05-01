@@ -9,22 +9,74 @@ export function resolveLanguage(value: unknown): Language {
   return value === "en" ? "en" : "zh-CN";
 }
 
+export function pick<T>(items: readonly T[]): T {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
 export const I18N = {
   "zh-CN": {
     bubble: {
-      woof: "woof!",
-      breakReminder: "你坐太久啦，陪我站起来走一分钟吧",
-      breakDone: "好耶，尾巴批准！",
-      breakRun: (seconds: number) => `休息倒计时 ${seconds} 秒，快离开屏幕！`,
-      breakRunComplete: "休息完成，我回到这里陪你。",
-      breakIgnore: "好吧……但我会担心你的。",
-      hydrationReminder: "我有点渴了……你也喝口水吧？",
-      hydrationDone: "补水成功！",
-      focusStart: (minutes: number) => `我会帮你守住这 ${minutes} 分钟。`,
-      focusWarning: "嘿，说好专注的",
-      focusComplete: "守护成功！尾巴批准。",
-      focusCancelled: "专注已结束，我在这里陪你。",
-      focusBack: "好，我继续守着。"
+      woof: ["woof!", "汪！", "汪汪~"],
+      breakReminder: [
+        "坐太久啦，去走一分钟吧",
+        "我想和你玩儿一会儿，去走一分钟吧",
+        "坐了好久了……去走一分钟吧！",
+        "我想玩儿了，去走一分钟吧"
+      ],
+      breakDone: [
+        "好耶！摇尾巴~",
+        "耶耶耶 好喜欢你",
+        "开心！"
+      ],
+      breakRun: [
+        (seconds: number) => `我还要玩 ${seconds} 秒！快离开屏幕~`,
+        (seconds: number) => `倒计时 ${seconds} 秒，别偷偷回来哦`,
+        (seconds: number) => `${seconds} 秒！`
+      ],
+      breakRunComplete: [
+        "玩够啦，回来陪你坐会儿~",
+        "回来啦！我在等你呢",
+        "休息完毕，蹲好了~"
+      ],
+      breakIgnore: [
+        "好吧……但我会担心你的",
+        "呜……那你下次一定站起来",
+        "好吧，我先趴着等你……"
+      ],
+      hydrationReminder: [
+        "我有点渴了……你也喝口水吧？",
+        "想喝水了！你也来一口嘛",
+        "舔舔嘴……该喝水啦",
+        "水碗空了！你的杯子呢？"
+      ],
+      hydrationDone: [
+        "咕嘟咕嘟，舒服~",
+        "喝饱啦！",
+        "汪，水真好喝"
+      ],
+      focusStart: [
+        (minutes: number) => `好，我帮你看着这 ${minutes} 分钟！`,
+        (minutes: number) => `专心${minutes} 分钟，我盯着`
+      ],
+      focusWarning: [
+        "嘿，说好专注的",
+        "走神啦！快回来~",
+        "汪！我看到你在摸鱼了",
+        "不许开小差！"
+      ],
+      focusComplete: [
+        "专心时间到！",
+        "专心结束！摇尾巴~",
+      ],
+      focusCancelled: [
+        "好，我陪你歇会儿",
+        "收工！我趴下啦"
+      ],
+      focusBack: [
+        "好，我继续盯着~",
+        "嗯！回去干活吧",
+        "我也继续专心啦"
+      ]
     },
     actions: {
       breakDone: "我站起来了",
@@ -135,19 +187,67 @@ export const I18N = {
   },
   en: {
     bubble: {
-      woof: "woof!",
-      breakReminder: "You've been sitting for a while. Stand up with me for one minute?",
-      breakDone: "Nice. Tail approved.",
-      breakRun: (seconds: number) => `Break countdown: ${seconds}s. Step away from the screen.`,
-      breakRunComplete: "Break complete. I'll stay here with you.",
-      breakIgnore: "Okay... but I will worry about you.",
-      hydrationReminder: "I'm a little thirsty. You should take a sip too.",
-      hydrationDone: "Hydration logged.",
-      focusStart: (minutes: number) => `I'll guard these ${minutes} minutes for you.`,
-      focusWarning: "Hey, we agreed to stay focused.",
-      focusComplete: "Focus protected. Tail approved.",
-      focusCancelled: "Focus is over. I'll stay here with you.",
-      focusBack: "Good. I'll keep guarding."
+      woof: ["woof!", "bark bark!", "arf~"],
+      breakReminder: [
+        "You've been sitting too long, walk for a minute!",
+        "I wanna play with you~ walk for a minute!",
+        "Sitting for so long… go walk for a minute!",
+        "I wanna play! Walk for a minute~"
+      ],
+      breakDone: [
+        "Yay! *tail wag*",
+        "Yay yay yay I like you so much",
+        "Happy!"
+      ],
+      breakRun: [
+        (seconds: number) => `I still wanna play for ${seconds}s! Get away from the screen~`,
+        (seconds: number) => `${seconds}s left, no sneaking back!`,
+        (seconds: number) => `${seconds}s!`
+      ],
+      breakRunComplete: [
+        "Done playing~ sitting back down with you",
+        "I'm back! Was waiting for you~",
+        "Break's over, all settled down~"
+      ],
+      breakIgnore: [
+        "Okay… but I'll worry about you",
+        "Hmm… you have to stand up next time",
+        "Fine, I'll lie here and wait…"
+      ],
+      hydrationReminder: [
+        "I'm a little thirsty… you should drink some water too?",
+        "I want water! You have some too~",
+        "*licks lips* …time for water~",
+        "My bowl's empty! Where's your cup?"
+      ],
+      hydrationDone: [
+        "*slurp slurp* ahh~",
+        "All full!",
+        "Woof, water's so good"
+      ],
+      focusStart: [
+        (minutes: number) => `Okay, I'll keep watch for ${minutes} minutes!`,
+        (minutes: number) => `Focus for ${minutes} minutes, I'm watching`
+      ],
+      focusWarning: [
+        "Hey, we said we'd focus!",
+        "You're distracted! Come back~",
+        "Woof! I saw you slacking off",
+        "No wandering off!"
+      ],
+      focusComplete: [
+        "Focus time's up!",
+        "Focus done! *tail wag*"
+      ],
+      focusCancelled: [
+        "Okay, I'll keep you company for a bit",
+        "All done! I'm lying down~"
+      ],
+      focusBack: [
+        "Good, I'll keep watching~",
+        "Mm! Back to work then",
+        "I'll keep focusing too~"
+      ]
     },
     actions: {
       breakDone: "I stood up",
@@ -262,6 +362,8 @@ export const I18N = {
   }
 } as const;
 
-export function i18n(language: Language): (typeof I18N)[Language] {
+export type I18nBundle = (typeof I18N)[Language];
+
+export function i18n(language: Language): I18nBundle {
   return I18N[language];
 }
