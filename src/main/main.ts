@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { join, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import { app, BrowserWindow, ipcMain, Menu, net, protocol, screen, Tray } from "electron";
 import Store from "electron-store";
@@ -1002,10 +1002,24 @@ protocol.registerSchemesAsPrivileged([
 
 app.whenReady().then(() => {
   protocol.handle("pawpal-asset", (request) => {
-    const url = new URL(request.url);
-    const relativePath = decodeURIComponent(url.pathname.replace(/^\/+/, ""));
+    let relativePath = "";
+    try {
+      const url = new URL(request.url);
+      relativePath = decodeURIComponent(url.pathname.replace(/^\/+/, ""));
+    } catch {
+      return new Response("Invalid asset URL", { status: 404 });
+    }
+
     const base = app.isPackaged ? process.resourcesPath : process.cwd();
-    return net.fetch(pathToFileURL(join(base, relativePath)).href);
+    const assetRoot = resolve(base, "pet_assets");
+    const assetPath = resolve(base, relativePath);
+    const isInsideAssetRoot = assetPath === assetRoot || assetPath.startsWith(`${assetRoot}${sep}`);
+
+    if (!isInsideAssetRoot) {
+      return new Response("Asset not found", { status: 404 });
+    }
+
+    return net.fetch(pathToFileURL(assetPath).href);
   });
 
   getStats();
