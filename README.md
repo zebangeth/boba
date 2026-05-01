@@ -28,6 +28,10 @@ pnpm typecheck
 pnpm build
 ```
 
+## License
+
+Source code is licensed under MIT. Pet animation assets have separate licensing notes; see [ASSET_LICENSE.md](./ASSET_LICENSE.md).
+
 ## Project Structure
 
 ```text

@@ -2,6 +2,7 @@
   "name": "pawse",
   "version": "0.0.1",
   "description": "A tiny desktop dog that helps you pause before you burn out.",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "main": "out/main/main.js",

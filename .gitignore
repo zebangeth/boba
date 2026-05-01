@@ -4,3 +4,4 @@ out/
 dist/
 .pnpm-store/
 *.log
+_raw_assets/
