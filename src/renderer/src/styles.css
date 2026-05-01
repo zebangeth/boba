@@ -77,7 +77,10 @@ textarea {
   animation: pet-breathe 2.4s ease-in-out infinite;
 }
 
-.state-happy {
+.state-happy,
+.state-breakDone,
+.state-hydrationDone,
+.state-focusDone {
   animation: pet-hop 0.55s ease-in-out infinite;
 }
 

@@ -595,7 +595,7 @@ function finishBreakRun(): void {
   blockingMode = null;
   hideBubble();
   showBubble({ id: "break-run-complete", message: text().bubble.breakRunComplete, autoDismissMs: 2200 });
-  setPetState("happy");
+  setPetState("breakDone");
   setTimeout(() => {
     if (!blockingMode && !focusActive) {
       hideBubble();
@@ -853,7 +853,7 @@ function stopFocusMode(completed: boolean): void {
     focusMinutes: stats.focusMinutes + elapsedMinutes
   }));
   sendToAll("app:snapshot", snapshot());
-  setPetState("happy");
+  setPetState("focusDone");
   showBubble({
     id: "focus-complete",
     message: completed ? text().bubble.focusComplete : text().bubble.focusCancelled,
@@ -909,8 +909,17 @@ function handleBubbleAction(actionId: string): void {
     blockingMode = null;
     sendToAll("app:snapshot", snapshot());
     setPetState("drinking");
-    showBubble({ id: "hydration-done", message: text().bubble.hydrationDone, autoDismissMs: 2300 });
-    setTimeout(() => happyFeedback(text().bubble.hydrationDone, scheduleReminderTimers), 2400);
+    hideBubble();
+    setTimeout(() => {
+      if (blockingMode) return;
+      setPetState("hydrationDone");
+      showBubble({ id: "hydration-complete", message: text().bubble.hydrationDone, autoDismissMs: 1800 });
+      setTimeout(() => {
+        hideBubble();
+        setPetState(focusActive ? "focusGuard" : "idle");
+        scheduleReminderTimers();
+      }, 1900);
+    }, 2400);
     return;
   }
   if (actionId === "hydration:snooze") {

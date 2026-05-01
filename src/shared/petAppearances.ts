@@ -14,6 +14,12 @@ export type PetAppearanceManifest = {
 
 const lineDog = (name: string): string => `线条小狗表情包全集/${name}`;
 
+const STATE_FALLBACKS: Partial<Record<PetState, PetState>> = {
+  breakDone: "happy",
+  hydrationDone: "happy",
+  focusDone: "happy"
+};
+
 export const PET_APPEARANCES: Record<PetAppearanceId, PetAppearanceManifest> = {
   lovartPuppy: {
     id: "lovartPuppy",
@@ -81,5 +87,10 @@ export function getPetAssetDefinition(
   state: PetState
 ): PetAssetDefinition {
   const appearance = PET_APPEARANCES[appearanceId];
-  return appearance.states[state] ?? appearance.fallback;
+  const fallbackState = STATE_FALLBACKS[state];
+  return (
+    appearance.states[state] ??
+    (fallbackState ? appearance.states[fallbackState] : undefined) ??
+    appearance.fallback
+  );
 }

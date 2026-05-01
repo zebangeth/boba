@@ -10,10 +10,13 @@ export type PetState =
   | "happy"
   | "breakPrompt"
   | "breakRunning"
+  | "breakDone"
   | "hydrationPrompt"
   | "drinking"
+  | "hydrationDone"
   | "focusGuard"
   | "focusAlert"
+  | "focusDone"
   | "sad"
   | "sleeping";
 
