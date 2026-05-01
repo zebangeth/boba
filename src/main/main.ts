@@ -79,7 +79,7 @@ let hydrationDueAt: number | null = null;
 let focusEndsAt: number | null = null;
 let bubbleTimer: NodeJS.Timeout | null = null;
 let dragTimer: NodeJS.Timeout | null = null;
-let breakRunDirection: 1 | -1 = 1;
+let breakRunVelocity: PetPosition = { x: 0, y: 0 };
 let nextBreakRunTurnAt = 0;
 let breakMutedToday = false;
 let dragOffset: PetPosition = { x: 0, y: 0 };
@@ -544,40 +544,62 @@ function showBreakRunCountdown(endsAt: number): void {
   });
 }
 
+function chooseBreakRunVelocity(): PetPosition {
+  const speed = 11 + Math.random() * 9;
+  const angle = Math.random() * Math.PI * 2;
+  return {
+    x: Math.cos(angle) * speed,
+    y: Math.sin(angle) * speed
+  };
+}
+
 function movePetForBreakRun(): void {
   if (!petWindow || petWindow.isDestroyed() || !petWindow.isVisible()) return;
 
-  const workArea = screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).workArea;
   const bounds = petWindow.getBounds();
+  const workArea = screen.getDisplayNearestPoint({
+    x: bounds.x + Math.round(bounds.width / 2),
+    y: bounds.y + Math.round(bounds.height / 2)
+  }).workArea;
   const now = Date.now();
   const minX = workArea.x + 8;
   const maxX = workArea.x + workArea.width - PET_WINDOW.width - 8;
+  const minY = workArea.y + 8;
+  const maxY = workArea.y + workArea.height - PET_WINDOW.height - 8;
 
   if (now >= nextBreakRunTurnAt && Math.random() < 0.45) {
-    breakRunDirection = breakRunDirection === 1 ? -1 : 1;
+    breakRunVelocity = chooseBreakRunVelocity();
   }
 
-  const speed = 9 + Math.round(Math.random() * 10);
-  let nextX = bounds.x + breakRunDirection * speed;
+  let nextX = bounds.x + breakRunVelocity.x;
+  let nextY = bounds.y + breakRunVelocity.y;
 
   if (nextX <= minX) {
     nextX = minX;
-    breakRunDirection = 1;
+    breakRunVelocity.x = Math.abs(breakRunVelocity.x);
   }
   if (nextX >= maxX) {
     nextX = maxX;
-    breakRunDirection = -1;
+    breakRunVelocity.x = -Math.abs(breakRunVelocity.x);
+  }
+  if (nextY <= minY) {
+    nextY = minY;
+    breakRunVelocity.y = Math.abs(breakRunVelocity.y);
+  }
+  if (nextY >= maxY) {
+    nextY = maxY;
+    breakRunVelocity.y = -Math.abs(breakRunVelocity.y);
   }
 
   if (now >= nextBreakRunTurnAt) {
     nextBreakRunTurnAt = now + 350 + Math.round(Math.random() * 850);
   }
 
-  setPetFacing(breakRunDirection === 1 ? "right" : "left");
+  setPetFacing(breakRunVelocity.x >= 0 ? "right" : "left");
   petWindow.setBounds({
     ...bounds,
-    x: nextX,
-    y: workArea.y + workArea.height - PET_WINDOW.height
+    x: Math.round(nextX),
+    y: Math.round(nextY)
   });
 }
 
@@ -602,10 +624,10 @@ function startBreakRun(): void {
   clearBreakRunTimers();
   blockingMode = "breakRun";
   breakDueAt = null;
-  breakRunDirection = Math.random() < 0.5 ? -1 : 1;
+  breakRunVelocity = chooseBreakRunVelocity();
   nextBreakRunTurnAt = Date.now();
   setPetState("breakRunning");
-  setPetFacing(breakRunDirection === 1 ? "right" : "left");
+  setPetFacing(breakRunVelocity.x >= 0 ? "right" : "left");
   const endsAt = Date.now() + BREAK_RUN_DURATION_MS;
   showBreakRunCountdown(endsAt);
   breakRunCountdownTimer = setInterval(() => showBreakRunCountdown(endsAt), 1000);
