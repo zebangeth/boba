@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { JSX, PointerEvent } from "react";
 import { i18n, resolveLanguage } from "../../../shared/i18n";
-import type { SpeechBubble } from "../../../shared/types";
-import { getPetAsset } from "../assets";
+import type { PetState, SpeechBubble } from "../../../shared/types";
+import { getPetAsset, getPetAssetVariantCount } from "../assets";
 import { useNow, useSnapshot } from "../hooks";
 
 type DragRef = {
@@ -11,6 +11,18 @@ type DragRef = {
   startY: number;
   dragging: boolean;
 };
+
+const CONTINUOUS_ASSET_STATES = new Set<PetState>(["idle", "focusGuard"]);
+const CONTINUOUS_ASSET_ROTATION_MS = 15 * 60 * 1000;
+
+function randomVariant(count: number, previous?: number): number {
+  if (count <= 1) return 0;
+  let next = Math.floor(Math.random() * count);
+  if (previous !== undefined && next === previous) {
+    next = (next + 1) % count;
+  }
+  return next;
+}
 
 function formatFocusCountdown(endsAt: number | null, now: number): string {
   const remainingSeconds = Math.max(0, Math.ceil(((endsAt ?? now) - now) / 1000));
@@ -24,22 +36,37 @@ export function PetView(): JSX.Element {
   const snapshot = useSnapshot();
   const now = useNow(1000);
   const [bubble, setBubble] = useState<SpeechBubble | null>(null);
+  const [assetVariant, setAssetVariant] = useState(0);
+  const [stateSignal, setStateSignal] = useState(0);
   const dragRef = useRef<DragRef | null>(null);
   const labels = i18n(resolveLanguage(snapshot.settings.language)).settings;
 
   useEffect(() => {
     const offBubble = window.pawse.onShowBubble(setBubble);
     const offHide = window.pawse.onHideBubble(() => setBubble(null));
+    const offPetState = window.pawse.onPetState(() => setStateSignal((current) => current + 1));
     return () => {
       offBubble();
       offHide();
+      offPetState();
     };
   }, []);
 
   const state = snapshot.petState;
   const altText = `Pawse ${state}`;
   const facingClass = snapshot.petFacing === "left" ? "facing-left" : "facing-right";
-  const asset = getPetAsset(snapshot.settings.petAppearanceId, state);
+  const appearanceId = snapshot.settings.petAppearanceId;
+  const asset = getPetAsset(appearanceId, state, assetVariant);
+
+  useEffect(() => {
+    const variantCount = getPetAssetVariantCount(appearanceId, state);
+    setAssetVariant(randomVariant(variantCount));
+    if (!CONTINUOUS_ASSET_STATES.has(state) || variantCount <= 1) return;
+    const timer = window.setInterval(() => {
+      setAssetVariant((current) => randomVariant(variantCount, current));
+    }, CONTINUOUS_ASSET_ROTATION_MS);
+    return () => window.clearInterval(timer);
+  }, [appearanceId, state, stateSignal]);
 
   function startPointer(event: PointerEvent<HTMLButtonElement>): void {
     if (event.button !== 0) return;

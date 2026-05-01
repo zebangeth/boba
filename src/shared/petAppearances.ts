@@ -1,7 +1,7 @@
 import type { Language, PetAppearanceId, PetState } from "./types";
 
 export type PetAssetDefinition = {
-  path: string;
+  path: string | string[];
   isPlaceholder?: boolean;
 };
 
@@ -12,7 +12,7 @@ export type PetAppearanceManifest = {
   states: Partial<Record<PetState, PetAssetDefinition>>;
 };
 
-const lineDog = (name: string): string => `线条小狗表情包全集/${name}`;
+const lineDog = (state: PetState, name: string): string => `pet_assets/线条小狗/${state}/${name}`;
 
 const STATE_FALLBACKS: Partial<Record<PetState, PetState>> = {
   breakDone: "happy",
@@ -52,21 +52,93 @@ export const PET_APPEARANCES: Record<PetAppearanceId, PetAppearanceManifest> = {
       en: "Line Dog"
     },
     fallback: {
-      path: lineDog("线条小狗第2弹_好.gif"),
+      path: lineDog("idle", "线条小狗第9弹_甩耳朵.gif"),
       isPlaceholder: true
     },
     states: {
-      idle: { path: lineDog("线条小狗第8弹_无聊.gif") },
-      sitting: { path: lineDog("线条小狗第11弹_趴趴.gif"), isPlaceholder: true },
-      happy: { path: lineDog("线条小狗第3弹_开心.gif") },
-      breakPrompt: { path: lineDog("线条小狗第12弹_醒醒.gif"), isPlaceholder: true },
-      breakRunning: { path: lineDog("线条小狗第12弹_爬行.gif"), isPlaceholder: true },
-      hydrationPrompt: { path: lineDog("线条小狗第19弹_喝咖啡.gif"), isPlaceholder: true },
-      drinking: { path: lineDog("线条小狗第16弹_吃饭.gif"), isPlaceholder: true },
-      focusGuard: { path: lineDog("线条小狗第17弹_工作.gif") },
-      focusAlert: { path: lineDog("线条小狗第12弹_醒醒.gif"), isPlaceholder: true },
-      sad: { path: lineDog("线条小狗第20弹_难过.gif") },
-      sleeping: { path: lineDog("线条小狗第10弹_睡觉.gif") }
+      idle: {
+        path: [
+          lineDog("idle", "线条小狗第12弹_无聊.gif"),
+          lineDog("idle", "线条小狗第12弹_晃脚脚.gif"),
+          lineDog("idle", "线条小狗第1弹_摆烂.gif"),
+          lineDog("idle", "线条小狗第7弹_开心.gif"),
+          lineDog("idle", "线条小狗第9弹_甩耳朵.gif")
+        ]
+      },
+      sitting: {
+        path: lineDog("idle", "线条小狗第12弹_晃脚脚.gif"),
+        isPlaceholder: true
+      },
+      happy: {
+        path: [
+          lineDog("happy", "线条小狗第1弹_嗨.gif"),
+          lineDog("happy", "线条小狗第1弹_爱你.gif"),
+          lineDog("happy", "线条小狗第8弹_好耶.gif")
+        ]
+      },
+      breakPrompt: {
+        path: [
+          lineDog("breakPrompt", "线条小狗第2弹_激动.gif"),
+          lineDog("breakPrompt", "线条小狗第5弹_偷看.gif"),
+          lineDog("breakPrompt", "线条小狗第5弹_出去玩.gif")
+        ]
+      },
+      breakRunning: {
+        path: [
+          lineDog("breakRunning", "线条小狗第1弹_啦啦啦.gif"),
+          lineDog("breakRunning", "线条小狗第1弹_来了.gif")
+        ]
+      },
+      breakDone: {
+        path: [
+          lineDog("breakDone", "线条小狗第11弹_骄傲.gif"),
+          lineDog("breakDone", "线条小狗第12弹_送你心心.gif"),
+          lineDog("breakDone", "线条小狗第2弹_耶.gif")
+        ]
+      },
+      hydrationPrompt: {
+        path: lineDog("hydrationPrompt", "线条小狗第2弹_快点.gif")
+      },
+      drinking: {
+        path: lineDog("drinking", "线条小狗第19弹_喝咖啡.gif")
+      },
+      hydrationDone: {
+        path: lineDog("hydrationDone", "线条小狗第12弹_好棒.gif")
+      },
+      focusGuard: {
+        path: [
+          lineDog("focusGuard", "线条小狗第17弹_工作.gif"),
+          lineDog("focusGuard", "线条小狗第2弹_努力.gif"),
+          lineDog("focusGuard", "线条小狗第9弹_甩耳朵.gif")
+        ]
+      },
+      focusAlert: {
+        path: [
+          lineDog("focusAlert", "线条小狗第15弹_惊.gif"),
+          lineDog("focusAlert", "线条小狗第15弹_疑问.gif"),
+          lineDog("focusAlert", "线条小狗第1弹_什么.gif"),
+          lineDog("focusAlert", "线条小狗第1弹_哼.gif"),
+          lineDog("focusAlert", "线条小狗第3弹_不要.gif")
+        ]
+      },
+      focusDone: {
+        path: [
+          lineDog("focusDone", "线条小狗第1弹_庆祝.gif"),
+          lineDog("focusDone", "线条小狗第2弹_庆祝.gif"),
+          lineDog("focusDone", "线条小狗第3弹_好耶.gif")
+        ]
+      },
+      sad: {
+        path: [
+          lineDog("sad", "线条小狗第13弹_大哭.gif"),
+          lineDog("sad", "线条小狗第15弹_呜呜呜.gif"),
+          lineDog("sad", "线条小狗第8弹_伤心.gif"),
+          lineDog("sad", "线条小狗第8弹_呜呜.gif")
+        ]
+      },
+      sleeping: {
+        path: lineDog("sleeping", "线条小狗第12弹_困.gif")
+      }
     }
   }
 };
