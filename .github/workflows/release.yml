@@ -6,40 +6,10 @@ on:
       - "v*"
 
 jobs:
-  build-mac:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      - run: pnpm build
-
-      - name: Build Mac DMGs
-        run: pnpm exec electron-builder --mac --arm64 --x64
-        env:
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: mac-dmgs
-          path: dist/*.dmg
-
   build-win:
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -59,24 +29,9 @@ jobs:
       - name: Build Windows installer
         run: pnpm exec electron-builder --win
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: win-installer
-          path: dist/*.exe
-
-  release:
-    needs: [build-mac, build-win]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-          merge-multiple: true
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/*
+          files: dist/*.exe
           generate_release_notes: true
+          draft: true
