@@ -27,7 +27,7 @@ jobs:
       - run: pnpm build
 
       - name: Build Windows installer
-        run: pnpm exec electron-builder --win
+        run: pnpm exec electron-builder --win --publish never
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
