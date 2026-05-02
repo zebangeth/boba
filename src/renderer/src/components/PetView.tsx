@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import type { JSX, PointerEvent } from "react";
+import type { FormEvent, JSX, PointerEvent, ReactNode } from "react";
+import SimpleBar from "simplebar-react";
+import "simplebar-react/dist/simplebar.min.css";
 import { i18n, resolveLanguage } from "../../../shared/i18n";
 import type { PetState, SpeechBubble } from "../../../shared/types";
 import { getPetAsset, getPetAssetVariantCount } from "../assets";
@@ -15,6 +17,28 @@ type DragRef = {
 const CONTINUOUS_ASSET_STATES = new Set<PetState>(["idle", "focusGuard"]);
 const CONTINUOUS_ASSET_ROTATION_MS = 15 * 60 * 1000;
 const DRAG_START_DISTANCE_PX = 10;
+const URL_PATTERN = /https?:\/\/[^\s<>"'`]+/gi;
+const TRAILING_URL_PUNCTUATION = new Set([
+  ",",
+  ".",
+  "!",
+  "?",
+  ";",
+  ":",
+  ")",
+  "]",
+  "}",
+  "，",
+  "。",
+  "！",
+  "？",
+  "；",
+  "：",
+  "）",
+  "】",
+  "」",
+  "』"
+]);
 
 function randomVariant(count: number, previous?: number): number {
   if (count <= 1) return 0;
@@ -33,6 +57,50 @@ function formatFocusCountdown(endsAt: number | null, now: number): string {
   return [hours, minutes, seconds].map((part) => String(part).padStart(2, "0")).join(":");
 }
 
+function trimTrailingUrlPunctuation(rawUrl: string): { url: string; suffix: string } {
+  let url = rawUrl;
+  let suffix = "";
+  while (url && TRAILING_URL_PUNCTUATION.has(url[url.length - 1])) {
+    suffix = `${url[url.length - 1]}${suffix}`;
+    url = url.slice(0, -1);
+  }
+  return { url, suffix };
+}
+
+function renderMessageWithLinks(message: string, linkLabel: string): ReactNode[] {
+  const nodes: ReactNode[] = [];
+  let lastIndex = 0;
+
+  for (const match of message.matchAll(URL_PATTERN)) {
+    const rawUrl = match[0];
+    const start = match.index ?? 0;
+    const { url, suffix } = trimTrailingUrlPunctuation(rawUrl);
+    if (!url) continue;
+
+    if (start > lastIndex) {
+      nodes.push(message.slice(lastIndex, start));
+    }
+    nodes.push(
+      <a
+        className="speech-bubble__link"
+        href={url}
+        key={`${url}-${start}`}
+        rel="noreferrer"
+        target="_blank"
+      >
+        [{linkLabel}]
+      </a>
+    );
+    if (suffix) nodes.push(suffix);
+    lastIndex = start + rawUrl.length;
+  }
+
+  if (lastIndex < message.length) {
+    nodes.push(message.slice(lastIndex));
+  }
+  return nodes.length ? nodes : [message];
+}
+
 export function PetView(): JSX.Element {
   const snapshot = useSnapshot();
   const now = useNow(1000);
@@ -40,8 +108,13 @@ export function PetView(): JSX.Element {
   const [assetVariant, setAssetVariant] = useState(0);
   const [assetReplayKey, setAssetReplayKey] = useState(0);
   const [stateSignal, setStateSignal] = useState(0);
+  const [chatDraft, setChatDraft] = useState("");
+  const [chatSending, setChatSending] = useState(false);
   const dragRef = useRef<DragRef | null>(null);
-  const labels = i18n(resolveLanguage(snapshot.settings.language)).settings;
+  const chatInputRef = useRef<HTMLInputElement | null>(null);
+  const copy = i18n(resolveLanguage(snapshot.settings.language));
+  const labels = copy.settings;
+  const actionLabels = copy.actions;
 
   useEffect(() => {
     const offBubble = window.pawpal.onShowBubble(setBubble);
@@ -102,6 +175,34 @@ export function PetView(): JSX.Element {
     };
   }, []);
 
+  useEffect(() => {
+    if (!bubble?.input) {
+      setChatDraft("");
+      setChatSending(false);
+      return;
+    }
+    window.setTimeout(() => chatInputRef.current?.focus(), 0);
+  }, [bubble?.id, bubble?.input]);
+
+  useEffect(() => {
+    function blurChatInput(): void {
+      chatInputRef.current?.blur();
+    }
+
+    window.addEventListener("blur", blurChatInput);
+    return () => window.removeEventListener("blur", blurChatInput);
+  }, []);
+
+  async function submitChat(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
+    const message = chatDraft.trim();
+    if (!message || chatSending || bubble?.input?.disabled) return;
+    setChatSending(true);
+    setChatDraft("");
+    await window.pawpal.sendCompanionMessage(message);
+    setChatSending(false);
+  }
+
   function startPointer(event: PointerEvent<HTMLButtonElement>): void {
     if (event.button !== 0) return;
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -149,8 +250,51 @@ export function PetView(): JSX.Element {
       }}
     >
       {bubble ? (
-        <section className="speech-bubble">
-          <p>{bubble.message}</p>
+        <section
+          className={`speech-bubble${bubble.input ? " has-input" : ""}`}
+          onPointerDownCapture={() => {
+            if (bubble.input) window.pawpal.companionActivity();
+          }}
+        >
+          {bubble.dismissible ? (
+            <div className="bubble-window-controls">
+              <button
+                type="button"
+                className="bubble-window-control"
+                aria-label={actionLabels.dismissBubble}
+                title={actionLabels.dismissBubble}
+                onClick={window.pawpal.dismissBubble}
+              >
+                ×
+              </button>
+            </div>
+          ) : null}
+          <SimpleBar className="speech-bubble__scroll" autoHide={false}>
+            <p className="speech-bubble__message">
+              {renderMessageWithLinks(bubble.message, actionLabels.linkLabel)}
+            </p>
+          </SimpleBar>
+          {bubble.input ? (
+            <form className="bubble-chat" onSubmit={submitChat}>
+              <input
+                ref={chatInputRef}
+                value={chatDraft}
+                disabled={chatSending || bubble.input.disabled}
+                placeholder={bubble.input.placeholder}
+                onChange={(event) => {
+                  setChatDraft(event.target.value);
+                  window.pawpal.companionActivity();
+                }}
+              />
+              <button
+                type="submit"
+                className="bubble-button primary bubble-chat__submit"
+                disabled={chatSending || !chatDraft.trim() || bubble.input.disabled}
+              >
+                {bubble.input.submitLabel}
+              </button>
+            </form>
+          ) : null}
           {bubble.actions?.length ? (
             <div className="bubble-actions">
               {bubble.actions.map((action) => (

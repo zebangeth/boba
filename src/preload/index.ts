@@ -1,6 +1,8 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type {
   AppSnapshot,
+  CompanionChatResult,
+  ChatProviderModelsResult,
   DemoTrigger,
   PetState,
   Settings,
@@ -24,9 +26,15 @@ const api = {
     ipcRenderer.send("pet:drag-start", offset),
   petDragStop: (): void => ipcRenderer.send("pet:drag-stop"),
   bubbleAction: (actionId: string): void => ipcRenderer.send("bubble:action", actionId),
+  dismissBubble: (): void => ipcRenderer.send("bubble:dismiss"),
+  companionActivity: (): void => ipcRenderer.send("companion:activity"),
   updateSettings: (settings: Partial<Settings>): void =>
     ipcRenderer.send("settings:update", settings),
   triggerDemo: (trigger: DemoTrigger): void => ipcRenderer.send("demo:trigger", trigger),
+  sendCompanionMessage: (message: string): Promise<CompanionChatResult> =>
+    ipcRenderer.invoke("companion:send-message", message),
+  listChatModels: (settings: Partial<Settings>): Promise<ChatProviderModelsResult> =>
+    ipcRenderer.invoke("chat:list-models", settings),
   isPackaged: !process.defaultApp,
   assetUrl: (relativePath: string): string => {
     return `pawpal-asset://asset/${encodeURIComponent(relativePath)}`;

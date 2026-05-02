@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1648" height="1648" viewBox="0 0 1648 1648">
+  <defs><marker id="arrowhead" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M 0 0 L 10 4 L 0 8 z" fill="#343a40"/></marker></defs>
+  <rect width="100%" height="100%" fill="#ffffff"/>
+  <rect x="137" y="133" width="1100" height="455" rx="14" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1" opacity="0.55"/>
+<rect x="137" y="628" width="1100" height="485" rx="14" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1" opacity="0.55"/>
+<rect x="137" y="1153" width="1100" height="445" rx="14" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1" opacity="0.55"/>
+<path d="M 432 273 L 557 256" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 309 318 L 309 428" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 187 468 L 159 468 L 159 273 L 187 273" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 679 308 L 679 368" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 802 408 L 897 408" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 802 256 L 1167 256 L 1167 408 L 1142 408" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 897 448 L 679 553 L 432 273" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 315 808 L 315 868" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 315 958 L 315 1018" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 442 1063 L 507 1063 L 507 913 L 557 913" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 557 938 L 527 938 L 527 1078 L 442 1078" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 187 913 L 157 913 L 157 766 L 187 766" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 442 913 L 842 913 L 842 766 L 897 766" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 442 766 L 897 766" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 679 868 L 679 838 L 1019 838 L 1019 808" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 1019 1018 L 1019 808" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 362 1348 L 407 1348" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 597 1348 L 642 1348" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 852 1348 L 897 1348" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 1007 1383 L 1007 1413 L 502 1413 L 502 1448" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 597 1483 L 642 1483" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<path d="M 597 1506 L 872 1506 L 872 1483 L 897 1483" fill="none" stroke="#343a40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrowhead)" opacity="1"/>
+<rect x="187" y="228" width="245" height="90" rx="14" fill="#a5d8ff" stroke="#1971c2" stroke-width="2" opacity="1"/>
+<rect x="187" y="428" width="245" height="80" rx="14" fill="#ffec99" stroke="#f08c00" stroke-width="2" opacity="1"/>
+<rect x="557" y="203" width="245" height="105" rx="14" fill="#ffc9c9" stroke="#e8590c" stroke-width="2" opacity="1"/>
+<rect x="557" y="368" width="245" height="80" rx="14" fill="#eebefa" stroke="#9c36b5" stroke-width="2" opacity="1"/>
+<rect x="897" y="368" width="245" height="80" rx="14" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2" opacity="1"/>
+<rect x="187" y="723" width="255" height="85" rx="14" fill="#dee2e6" stroke="#868e96" stroke-width="2" opacity="1"/>
+<rect x="187" y="868" width="255" height="90" rx="14" fill="#ffec99" stroke="#f08c00" stroke-width="2" opacity="1"/>
+<rect x="187" y="1018" width="255" height="90" rx="14" fill="#a5d8ff" stroke="#1971c2" stroke-width="2" opacity="1"/>
+<rect x="557" y="868" width="245" height="90" rx="14" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2" opacity="1"/>
+<rect x="897" y="723" width="245" height="85" rx="14" fill="#ffc9c9" stroke="#e03131" stroke-width="2" opacity="1"/>
+<rect x="897" y="1018" width="245" height="90" rx="14" fill="#ffc9c9" stroke="#e8590c" stroke-width="2" opacity="1"/>
+<rect x="172" y="1313" width="190" height="70" rx="14" fill="#eebefa" stroke="#9c36b5" stroke-width="2" opacity="1"/>
+<rect x="407" y="1313" width="190" height="70" rx="14" fill="#ffc9c9" stroke="#e8590c" stroke-width="2" opacity="1"/>
+<rect x="642" y="1313" width="210" height="70" rx="14" fill="#ffec99" stroke="#f08c00" stroke-width="2" opacity="1"/>
+<rect x="897" y="1313" width="220" height="70" rx="14" fill="#a5d8ff" stroke="#1971c2" stroke-width="2" opacity="1"/>
+<rect x="407" y="1448" width="190" height="70" rx="14" fill="#b2f2bb" stroke="#2f9e44" stroke-width="2" opacity="1"/>
+<rect x="642" y="1448" width="210" height="70" rx="14" fill="#dee2e6" stroke="#868e96" stroke-width="2" opacity="1"/>
+<rect x="897" y="1448" width="220" height="70" rx="14" fill="#dee2e6" stroke="#868e96" stroke-width="2" opacity="1"/>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="24" fill="#212529" text-anchor="start" opacity="1"><tspan x="147" y="74">PawPal Companion State Machine with Chat Provider</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#495057" text-anchor="start" opacity="1"><tspan x="149" y="99">Narrow stacked layout: arrows stay inside their panel, and cross-system behavior is summarized in the priority flow.</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" fill="#212529" text-anchor="start" opacity="1"><tspan x="161" y="171">1. Original companion state machine</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" fill="#212529" text-anchor="start" opacity="1"><tspan x="161" y="666">2. Chat provider session overlay</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" fill="#212529" text-anchor="start" opacity="1"><tspan x="161" y="1191">3. Compatibility / priority rule</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="310" y="270">Base companion</tspan><tspan x="310" y="289">idle or focusGuard</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="310" y="465">Happy feedback</tspan><tspan x="310" y="484">auto return</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="680" y="243">Reminder prompt</tspan><tspan x="680" y="262">break / hydration</tspan><tspan x="680" y="281">focus warning</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="680" y="405">Break run</tspan><tspan x="680" y="424">blockingMode</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="1020" y="405">Completion states</tspan><tspan x="1020" y="424">return afterward</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="447" y="245">timer / warning</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="325" y="370">pet click</tspan><tspan x="325" y="384">chat off</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="162" y="390">auto</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="697" y="340">break done</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="820" y="390">done / timer</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="1077" y="300">snooze / done / back</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="672" y="535">resume base</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="312" y="752">Stored session</tspan><tspan x="312" y="771">bubble hidden</tspan><tspan x="312" y="790">no state lock</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="315" y="900">Chat open</tspan><tspan x="315" y="919">lock happy / last state</tspan><tspan x="315" y="938">input visible</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="315" y="1050">Waiting provider</tspan><tspan x="315" y="1069">lock focusGuard</tspan><tspan x="315" y="1088">/think:low</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="680" y="900">Reply shown</tspan><tspan x="680" y="919">lock API state</tspan><tspan x="680" y="938">input visible</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="1020" y="763">Session ended</tspan><tspan x="1020" y="782">close or 8h expiry</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="1020" y="1050">Provider disabled</tspan><tspan x="1020" y="1069">setup bubble</tspan><tspan x="1020" y="1088">lock happy</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="333" y="840">restore / click</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="333" y="990">send</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="469" y="1034">reply parsed</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="533" y="990">next message</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="159" y="842">minimize</tspan><tspan x="159" y="856">or 3m</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="822" y="838">close</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="652" y="748">8h expiry</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="737" y="820">close</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="1035" y="920">close</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#495057" text-anchor="start" opacity="1"><tspan x="557" y="1036">State from provider is parsed from reply JSON.</tspan><tspan x="557" y="1052">Displayed answer strips state keywords.</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" fill="#343a40" text-anchor="start" opacity="1"><tspan x="172" y="1232">Priority: blockingMode &gt; companionLockedState &gt; base petState.</tspan><tspan x="172" y="1249">Reminder restores chat only if it interrupted current chat and the session already has a user+assistant round.</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="268" y="1345">Chat/setup</tspan><tspan x="268" y="1364">lock active</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="502" y="1345">Reminder fires</tspan><tspan x="502" y="1364">break/hydration/focus</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="748" y="1345">Release chat lock</tspan><tspan x="748" y="1364">and hide bubble</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="1008" y="1345">Original reminder</tspan><tspan x="1008" y="1364">owns petState</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="503" y="1480">Reminder ends</tspan><tspan x="503" y="1499">completion flow</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="742" y="1479">Interrupted session</tspan><tspan x="742" y="1498">restore chat</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="16" fill="#1e1e1e" text-anchor="middle" opacity="1"><tspan x="1007" y="1480">No session</tspan><tspan x="1007" y="1499">idle or focusGuard</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="767" y="1400">when reminder completes</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="607" y="1468">if interrupted</tspan><tspan x="607" y="1482">chat has a round</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" fill="#343a40" text-anchor="start" opacity="1"><tspan x="737" y="1528">otherwise</tspan></text>
+<text font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" fill="#495057" text-anchor="start" opacity="1"><tspan x="172" y="1561">Code check: reminder entry calls interruptCompanionSessionForReminder();</tspan><tspan x="172" y="1577">setup lock is released even when there is no active session.</tspan></text>
+</svg>

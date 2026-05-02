@@ -4,6 +4,14 @@ export type PetAppearanceId = "lovartPuppy" | "lineDog";
 
 export type PetFacing = "left" | "right";
 
+export type ChatProviderId =
+  | "openai"
+  | "gemini"
+  | "kimi"
+  | "deepseek"
+  | "openclaw"
+  | "openai-compatible";
+
 export type PetState =
   | "idle"
   | "sitting"
@@ -20,6 +28,23 @@ export type PetState =
   | "sad"
   | "sleeping";
 
+export const COMPANION_AVAILABLE_STATES = [
+  "idle",
+  "sitting",
+  "happy",
+  "breakPrompt",
+  "breakRunning",
+  "breakDone",
+  "hydrationPrompt",
+  "drinking",
+  "hydrationDone",
+  "focusGuard",
+  "focusAlert",
+  "focusDone",
+  "sad",
+  "sleeping"
+] as const satisfies readonly PetState[];
+
 export type BubbleAction = {
   id: string;
   label: string;
@@ -31,6 +56,12 @@ export type SpeechBubble = {
   message: string;
   actions?: BubbleAction[];
   autoDismissMs?: number;
+  dismissible?: boolean;
+  input?: {
+    placeholder: string;
+    submitLabel: string;
+    disabled?: boolean;
+  };
 };
 
 export type BlockingMode = "break" | "breakRun" | "hydration" | "focusWarning" | null;
@@ -48,7 +79,31 @@ export type Settings = {
   distractionGraceSeconds: number;
   distractionBlockedApps: string[];
   distractionBlockedKeywords: string[];
+  chatCompanionEnabled: boolean;
+  chatProviderId: ChatProviderId;
+  chatBaseUrl: string;
+  chatApiKey: string;
+  chatModel: string;
+  chatThinkingPrefix: string;
+  chatSystemPrompt: string;
+  chatCompanionInactivityMinutes: number;
+  chatSessionExpiryHours: number;
 };
+
+export type ChatProviderModel = {
+  id: string;
+  ownedBy?: string;
+};
+
+export type ChatProviderModelsResult =
+  | {
+      ok: true;
+      models: ChatProviderModel[];
+    }
+  | {
+      ok: false;
+      error: string;
+    };
 
 export type TodayStats = {
   date: string;
@@ -76,6 +131,31 @@ export type DistractionStatus = {
   error: string | null;
 };
 
+export type CompanionSessionMessage = {
+  role: "user" | "assistant";
+  content: string;
+  state?: PetState;
+  createdAt: number;
+};
+
+export type CompanionSession = {
+  id: string;
+  startedAt: number;
+  lastActivityAt: number;
+  lastState: PetState;
+  messages: CompanionSessionMessage[];
+  endedAt?: number;
+  endReason?: "dismissed" | "expired";
+};
+
+export type ChatCompanionDiagnostics = {
+  moduleEnabled: boolean;
+  session: CompanionSession | null;
+  active: boolean;
+  conversationRounds: number;
+  resetDueAt: number | null;
+};
+
 export type AppSnapshot = {
   settings: Settings;
   stats: TodayStats;
@@ -86,7 +166,8 @@ export type AppSnapshot = {
   petFacing: PetFacing;
   blockingMode: BlockingMode;
   focusActive: boolean;
-  dogVisible: boolean;
+  pawpalVisible: boolean;
+  chatCompanion: ChatCompanionDiagnostics;
 };
 
 export type DemoTrigger =
@@ -94,6 +175,16 @@ export type DemoTrigger =
   | "hydration"
   | "focusWarning"
   | "happy";
+
+export type CompanionChatResult =
+  | {
+      ok: true;
+      message: string;
+    }
+  | {
+      ok: false;
+      error: string;
+    };
 
 export type RendererEventMap = {
   "pet:set-state": PetState;

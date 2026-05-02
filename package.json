@@ -62,7 +62,8 @@
   "dependencies": {
     "electron-store": "^10.1.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "simplebar-react": "^3.3.2"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",

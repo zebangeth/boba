@@ -14,16 +14,17 @@
   <img alt="License" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" />
 </p>
 
-PawPal 是一个 macOS 桌面宠物应用。一只透明、始终置顶的小狗会陪在你的屏幕上，在你久坐、忘记喝水或者分心刷社交媒体时，温柔地把你带回节奏里。
+PawPal 是一个 macOS 桌面宠物应用。一只透明、始终置顶的小狗会陪在你的屏幕上，陪你聊天，在你久坐、忘记喝水或者分心刷社交媒体时，温柔地把你带回节奏里。
 
 ## 功能
 
 - **休息提醒** — 定时提醒你站起来活动一下，小狗会跑过整个屏幕引起你的注意
 - **喝水提醒** — 别忘了喝水
 - **专注模式** — 检测你当前在用的 app，如果你在刷社交媒体，小狗会来提醒你回去工作
+- **聊天伴侣** — 有事没事跟小狗聊上两句，它会根据聊天内容变换心情，陪你开心也陪你难过
 - **多种宠物外观** — 目前有线条小狗和金毛 puppy 两种风格
 - **中文 / English** — 支持中英文切换
-- **本地数据** — 所有设置和统计数据保存在本地，不联网
+- **本地数据** — 设置、统计和最近一次的聊天会话都只保存在本地，不会联网保存。
 
 ## 安装
 
@@ -61,6 +62,7 @@ pnpm dist         # 编译 + 打包为 .dmg
 
 ```
 src/main/       主进程：窗口管理、托盘菜单、定时器、持久化、专注检测
+src/main/chat/  聊天伴侣模块：provider 请求、会话、状态锁、回复解析
 src/preload/    IPC 桥接层
 src/renderer/   React UI（宠物窗口 + 设置窗口）
 src/shared/     共享类型、默认配置、i18n、宠物外观定义
@@ -69,6 +71,7 @@ pet_assets/     宠物动画素材（GIF）
 
 ## 开发路线
 
+- [x] 聊天伴侣
 - [ ] 更多宠物外观
 - [ ] 声音效果
 - [ ] 开机自启
@@ -92,9 +95,10 @@ PawPal is a macOS desktop pet app. A transparent, always-on-top dog lives on you
 - **Break reminders** — timed nudges to get up and move; the dog runs across your screen to get your attention
 - **Hydration reminders** — don't forget to drink water
 - **Focus mode** — detects what app you're using; if you're on social media, the dog will nudge you back to work
+- **Chat companion** — connect an OpenAI-compatible provider and chat with PawPal from the speech bubble; it reacts with matching moods
 - **Multiple pet styles** — line-drawing dog and golden retriever puppy
 - **Chinese / English UI**
-- **Local-only data** — settings and stats stay on your machine
+- **Local-first data** — settings, stats, and the latest chat session stay on your machine; chat only connects out when enabled and configured
 
 ### Install
 

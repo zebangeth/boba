@@ -33,7 +33,14 @@ export function useSnapshot(): AppSnapshot {
     petFacing: "right",
     blockingMode: null,
     focusActive: false,
-    dogVisible: true
+    pawpalVisible: true,
+    chatCompanion: {
+      moduleEnabled: false,
+      session: null,
+      active: false,
+      conversationRounds: 0,
+      resetDueAt: null
+    }
   });
 
   useEffect(() => {

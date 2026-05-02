@@ -1,13 +1,25 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { JSX, ReactNode } from "react";
+import { CHAT_PROVIDER_PRESETS, DEFAULT_SETTINGS } from "../../../shared/constants";
 import { i18n, LANGUAGE_OPTIONS, resolveLanguage } from "../../../shared/i18n";
 import { petAppearanceOptions, resolvePetAppearanceId } from "../../../shared/petAppearances";
-import type { DemoTrigger, PetAppearanceId, Settings } from "../../../shared/types";
+import type {
+  ChatProviderId,
+  ChatProviderModel,
+  DemoTrigger,
+  PetAppearanceId,
+  Settings
+} from "../../../shared/types";
 import { getPetAsset } from "../assets";
 import { distractionHelp, formatDistractionState, formatTimer, formatTimestamp, localeFor } from "../format";
 import { useNow, useSnapshot } from "../hooks";
 
 type SettingsCopy = ReturnType<typeof i18n>["settings"];
+type ChatModelsState = {
+  status: "idle" | "loading" | "success" | "error";
+  models: ChatProviderModel[];
+  error?: string;
+};
 
 function Row({
   label,
@@ -120,6 +132,49 @@ function SelectControl({
   );
 }
 
+function TextControl({
+  value,
+  type = "text",
+  placeholder,
+  onChange
+}: {
+  value: string;
+  type?: "text" | "password" | "url";
+  placeholder?: string;
+  onChange: (value: string) => void;
+}): JSX.Element {
+  return (
+    <input
+      className="pref-text-input"
+      type={type}
+      value={value}
+      placeholder={placeholder}
+      spellCheck={false}
+      onChange={(event) => onChange(event.target.value)}
+    />
+  );
+}
+
+function TextAreaControl({
+  value,
+  placeholder,
+  onChange
+}: {
+  value: string;
+  placeholder?: string;
+  onChange: (value: string) => void;
+}): JSX.Element {
+  return (
+    <textarea
+      className="pref-textarea"
+      rows={4}
+      value={value}
+      placeholder={placeholder}
+      onChange={(event) => onChange(event.target.value)}
+    />
+  );
+}
+
 function ChipsControl({
   value,
   onChange,
@@ -182,6 +237,68 @@ function ChipsControl({
   );
 }
 
+function chatModelsStatusLabel(state: ChatModelsState, labels: SettingsCopy): string {
+  switch (state.status) {
+    case "loading":
+      return labels.chatModelsLoading;
+    case "success":
+      return state.models.length ? labels.chatModelsLoaded(state.models.length) : labels.chatModelsEmpty;
+    case "error":
+      return `${labels.chatModelsError}: ${state.error ?? labels.none}`;
+    case "idle":
+    default:
+      return labels.chatModelsIdle;
+  }
+}
+
+function ChatModelControl({
+  value,
+  labels,
+  modelsState,
+  placeholder,
+  onChange,
+  onRefresh
+}: {
+  value: string;
+  labels: SettingsCopy;
+  modelsState: ChatModelsState;
+  placeholder: string;
+  onChange: (value: string) => void;
+  onRefresh: () => void;
+}): JSX.Element {
+  return (
+    <div className="chat-model-control">
+      <TextControl value={value} placeholder={placeholder} onChange={onChange} />
+      <div className="chat-model-control__bar">
+        <span>{chatModelsStatusLabel(modelsState, labels)}</span>
+        <button
+          type="button"
+          className="pref-chip-button"
+          disabled={modelsState.status === "loading"}
+          onClick={onRefresh}
+        >
+          {labels.refreshChatModels}
+        </button>
+      </div>
+      {modelsState.models.length ? (
+        <div className="chat-model-list" aria-label={labels.chatModelList}>
+          {modelsState.models.map((model) => (
+            <button
+              key={model.id}
+              type="button"
+              className={`chat-model-option${model.id === value ? " is-selected" : ""}`}
+              onClick={() => onChange(model.id)}
+            >
+              <span>{model.id}</span>
+              {model.ownedBy ? <small>{model.ownedBy}</small> : null}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function StatCard({
   label,
   value,
@@ -202,16 +319,67 @@ function StatCard({
   );
 }
 
+function formatDurationMs(durationMs: number | null, language: string, labels: SettingsCopy): string {
+  if (durationMs === null) return labels.none;
+  const totalMinutes = Math.max(0, Math.floor(durationMs / 60_000));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const parts: string[] = [];
+  if (hours) parts.push(`${hours}${labels.hourUnit}`);
+  if (minutes || !parts.length) parts.push(`${minutes}${labels.minuteUnit}`);
+  return parts.join(language === "zh-CN" ? "" : " ");
+}
+
+function formatCountdown(timestamp: number | null, now: number, language: string, labels: SettingsCopy): string {
+  if (!timestamp) return labels.none;
+  const remainingMs = timestamp - now;
+  if (remainingMs <= 0) return labels.now;
+  return formatDurationMs(remainingMs, language, labels);
+}
+
+function formatDateTime(timestamp: number | null, language: string, labels: SettingsCopy): string {
+  if (!timestamp) return labels.never;
+  return new Intl.DateTimeFormat(localeFor(resolveLanguage(language)), {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  }).format(timestamp);
+}
+
 export function SettingsView(): JSX.Element {
   const snapshot = useSnapshot();
   const { settings, stats } = snapshot;
   const [draft, setDraft] = useState(settings);
   const [settingsDirty, setSettingsDirty] = useState(false);
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
+  const [chatModelsState, setChatModelsState] = useState<ChatModelsState>({
+    status: "idle",
+    models: []
+  });
+  const chatModelsRequestId = useRef(0);
   const now = useNow();
   const savedSettingsKey = JSON.stringify(settings);
+  const lastSyncedSettingsKey = useRef(savedSettingsKey);
   const language = resolveLanguage(draft.language);
   const labels = i18n(language).settings;
+  const chatSession = snapshot.chatCompanion.session;
+  const chatDurationMs = chatSession
+    ? (chatSession.endedAt ?? now) - chatSession.startedAt
+    : null;
+  const chatSessionStatus = !chatSession
+    ? labels.none
+    : snapshot.chatCompanion.active
+      ? labels.sessionActive
+      : chatSession.endedAt
+        ? labels.sessionEnded
+        : labels.sessionInactive;
+  const chatHistoryJson = useMemo(
+    () => JSON.stringify(chatSession?.messages ?? [], null, 2),
+    [chatSession]
+  );
 
   const petAvatar = useMemo(
     () => getPetAsset(resolvePetAppearanceId(draft.petAppearanceId), "happy"),
@@ -219,9 +387,11 @@ export function SettingsView(): JSX.Element {
   );
 
   useEffect(() => {
+    if (savedSettingsKey === lastSyncedSettingsKey.current) return;
+    lastSyncedSettingsKey.current = savedSettingsKey;
     setDraft(settings);
     setSettingsDirty(false);
-  }, [savedSettingsKey, settings]);
+  }, [savedSettingsKey]);
 
   useEffect(() => {
     if (!settingsDirty) return;
@@ -232,9 +402,66 @@ export function SettingsView(): JSX.Element {
     return () => window.clearTimeout(timer);
   }, [draft, settingsDirty]);
 
+  useEffect(() => {
+    if (!draft.chatCompanionEnabled) {
+      chatModelsRequestId.current += 1;
+      setChatModelsState({ status: "idle", models: [] });
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      void refreshChatModels();
+    }, 650);
+    return () => window.clearTimeout(timer);
+  }, [draft.chatCompanionEnabled, draft.chatProviderId, draft.chatBaseUrl, draft.chatApiKey]);
+
   function updateDraft(partial: Partial<Settings>): void {
     setDraft((current) => ({ ...current, ...partial }));
     setSettingsDirty(true);
+  }
+
+  async function refreshChatModels(): Promise<void> {
+    const requestId = chatModelsRequestId.current + 1;
+    chatModelsRequestId.current = requestId;
+    const settingsForRequest = { ...draft };
+    if (!settingsForRequest.chatBaseUrl.trim()) {
+      setChatModelsState({ status: "idle", models: [] });
+      return;
+    }
+    setChatModelsState((current) => ({ ...current, status: "loading", error: undefined }));
+    const result = await window.pawpal.listChatModels(settingsForRequest);
+    if (chatModelsRequestId.current !== requestId) return;
+    if (result.ok) {
+      setChatModelsState({ status: "success", models: result.models });
+      return;
+    }
+    setChatModelsState({ status: "error", models: [], error: result.error });
+  }
+
+  function updateChatProvider(value: string): void {
+    const chatProviderId = (
+      value in CHAT_PROVIDER_PRESETS ? value : DEFAULT_SETTINGS.chatProviderId
+    ) as ChatProviderId;
+    const preset = CHAT_PROVIDER_PRESETS[chatProviderId];
+    updateDraft({
+      chatProviderId,
+      chatBaseUrl: preset.baseUrl,
+      chatApiKey: "",
+      chatModel: preset.model,
+      chatThinkingPrefix: preset.thinkingPrefix
+    });
+  }
+
+  function resetChatSettings(): void {
+    updateDraft({
+      chatProviderId: DEFAULT_SETTINGS.chatProviderId,
+      chatBaseUrl: DEFAULT_SETTINGS.chatBaseUrl,
+      chatApiKey: DEFAULT_SETTINGS.chatApiKey,
+      chatModel: DEFAULT_SETTINGS.chatModel,
+      chatThinkingPrefix: DEFAULT_SETTINGS.chatThinkingPrefix,
+      chatSystemPrompt: DEFAULT_SETTINGS.chatSystemPrompt,
+      chatCompanionInactivityMinutes: DEFAULT_SETTINGS.chatCompanionInactivityMinutes,
+      chatSessionExpiryHours: DEFAULT_SETTINGS.chatSessionExpiryHours
+    });
   }
 
   return (
@@ -425,6 +652,135 @@ export function SettingsView(): JSX.Element {
         </div>
       </section>
 
+      <section className="prefs__group">
+        <h2 className="prefs__group-title">{labels.companion}</h2>
+        <Row
+          label={labels.enableChatCompanion}
+          control={
+            <ToggleControl
+              checked={draft.chatCompanionEnabled}
+              onChange={(chatCompanionEnabled) => updateDraft({ chatCompanionEnabled })}
+              ariaLabel={labels.enableChatCompanion}
+            />
+          }
+        />
+        {draft.chatCompanionEnabled ? (
+          <>
+            <Row
+              label={labels.chatProvider}
+              hint={labels.chatProviderHelp}
+              control={
+                <SelectControl
+                  value={draft.chatProviderId}
+                  options={[
+                    { value: "openai", label: labels.chatProviderOpenAi },
+                    { value: "gemini", label: labels.chatProviderGemini },
+                    { value: "kimi", label: labels.chatProviderKimi },
+                    { value: "deepseek", label: labels.chatProviderDeepSeek },
+                    { value: "openclaw", label: labels.chatProviderOpenClaw },
+                    { value: "openai-compatible", label: labels.chatProviderOpenAiCompatible }
+                  ]}
+                  onChange={updateChatProvider}
+                />
+              }
+            />
+            <Row
+              label={labels.chatBaseUrl}
+              hint={labels.chatBaseUrlHelp}
+              control={
+                <TextControl
+                  type="url"
+                  value={draft.chatBaseUrl}
+                  placeholder={CHAT_PROVIDER_PRESETS[draft.chatProviderId].baseUrl}
+                  onChange={(chatBaseUrl) => updateDraft({ chatBaseUrl })}
+                />
+              }
+            />
+            <Row
+              label={labels.chatApiKey}
+              hint={labels.chatApiKeyHelp}
+              control={
+                <TextControl
+                  type="password"
+                  value={draft.chatApiKey}
+                  onChange={(chatApiKey) => updateDraft({ chatApiKey })}
+                />
+              }
+            />
+            <Row
+              label={labels.chatModel}
+              hint={labels.chatModelHelp}
+              control={
+                <ChatModelControl
+                  value={draft.chatModel}
+                  labels={labels}
+                  modelsState={chatModelsState}
+                  placeholder={CHAT_PROVIDER_PRESETS[draft.chatProviderId].model}
+                  onChange={(chatModel) => updateDraft({ chatModel })}
+                  onRefresh={() => void refreshChatModels()}
+                />
+              }
+            />
+            <Row
+              label={labels.chatThinkingPrefix}
+              hint={labels.chatThinkingPrefixHelp}
+              control={
+                <TextControl
+                  value={draft.chatThinkingPrefix}
+                  placeholder={CHAT_PROVIDER_PRESETS[draft.chatProviderId].thinkingPrefix}
+                  onChange={(chatThinkingPrefix) => updateDraft({ chatThinkingPrefix })}
+                />
+              }
+            />
+            <Row
+              label={labels.chatCompanionInactivity}
+              hint={labels.chatCompanionInactivityHelp}
+              control={
+                <NumberControl
+                  value={draft.chatCompanionInactivityMinutes}
+                  min={1}
+                  max={120}
+                  unit={labels.minuteUnit}
+                  onChange={(chatCompanionInactivityMinutes) =>
+                    updateDraft({ chatCompanionInactivityMinutes })
+                  }
+                />
+              }
+            />
+            <Row
+              label={labels.chatSessionExpiry}
+              hint={labels.chatSessionExpiryHelp}
+              control={
+                <NumberControl
+                  value={draft.chatSessionExpiryHours}
+                  min={1}
+                  max={168}
+                  unit={labels.hourUnit}
+                  onChange={(chatSessionExpiryHours) =>
+                    updateDraft({ chatSessionExpiryHours })
+                  }
+                />
+              }
+            />
+            <Row
+              label={labels.chatSystemPrompt}
+              hint={labels.chatSystemPromptHelp}
+              control={
+                <TextAreaControl
+                  value={draft.chatSystemPrompt}
+                  onChange={(chatSystemPrompt) => updateDraft({ chatSystemPrompt })}
+                />
+              }
+            />
+          </>
+        ) : null}
+        <div className="prefs__inline-actions">
+          <button type="button" className="pref-button" onClick={resetChatSettings}>
+            {labels.resetChatSettings}
+          </button>
+        </div>
+      </section>
+
       {!window.pawpal.isPackaged && (
         <section className="prefs__group">
           <h2 className="prefs__group-title">{labels.testTools}</h2>
@@ -464,8 +820,8 @@ export function SettingsView(): JSX.Element {
               />
               <DiagCard label={labels.reminder} value={snapshot.blockingMode ?? labels.none} />
               <DiagCard
-                label={labels.dog}
-                value={snapshot.dogVisible ? labels.visible : labels.hidden}
+                label={labels.pawpal}
+                value={snapshot.pawpalVisible ? labels.visible : labels.hidden}
               />
             </DiagGroup>
 
@@ -514,6 +870,31 @@ export function SettingsView(): JSX.Element {
                 }).format(now)}
               />
             </DiagGroup>
+
+            <DiagGroup title={labels.chatCompanionDiagnostics}>
+              <DiagCard label={labels.sessionStatus} value={chatSessionStatus} />
+              <DiagCard
+                label={labels.sessionCreated}
+                value={formatDateTime(chatSession?.startedAt ?? null, language, labels)}
+              />
+              <DiagCard
+                label={labels.sessionDuration}
+                value={formatDurationMs(chatDurationMs, language, labels)}
+              />
+              <DiagCard
+                label={labels.conversationRounds}
+                value={String(snapshot.chatCompanion.conversationRounds)}
+              />
+              <DiagCard
+                label={labels.resetCountdown}
+                value={formatCountdown(snapshot.chatCompanion.resetDueAt, now, language, labels)}
+              />
+            </DiagGroup>
+
+            <div className="prefs__diag-json">
+              <h3 className="prefs__diag-json-title">{labels.sessionHistory}</h3>
+              <pre>{chatHistoryJson}</pre>
+            </div>
           </div>
         ) : null}
       </section>
