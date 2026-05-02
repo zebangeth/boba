@@ -19,12 +19,24 @@
     "productName": "PawPal",
     "mac": {
       "category": "public.app-category.productivity",
-      "target": "dmg",
+      "target": [
+        { "target": "dmg", "arch": ["arm64", "x64"] }
+      ],
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
       "notarize": true
+    },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     },
     "dmg": {
       "title": "PawPal",
