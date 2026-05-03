@@ -14,6 +14,7 @@ type DragRef = {
 
 const CONTINUOUS_ASSET_STATES = new Set<PetState>(["idle", "focusGuard"]);
 const CONTINUOUS_ASSET_ROTATION_MS = 15 * 60 * 1000;
+const DRAG_START_DISTANCE_PX = 10;
 
 function randomVariant(count: number, previous?: number): number {
   if (count <= 1) return 0;
@@ -59,6 +60,17 @@ export function PetView(): JSX.Element {
   const appearanceId = snapshot.settings.petAppearanceId;
   const asset = getPetAsset(appearanceId, state, assetVariant, assetReplayKey);
 
+  function finishPointerDrag(clicked: boolean): void {
+    const drag = dragRef.current;
+    if (!drag) return;
+    dragRef.current = null;
+    if (drag.dragging) {
+      window.pawpal.petDragStop();
+      return;
+    }
+    if (clicked) window.pawpal.petClicked();
+  }
+
   useEffect(() => {
     const variantCount = getPetAssetVariantCount(appearanceId, state);
     setAssetVariant(randomVariant(variantCount));
@@ -78,6 +90,18 @@ export function PetView(): JSX.Element {
     return () => window.clearInterval(timer);
   }, [asset.replayIntervalMs]);
 
+  useEffect(() => {
+    const cancelActiveDrag = (): void => finishPointerDrag(false);
+    window.addEventListener("pointerup", cancelActiveDrag);
+    window.addEventListener("pointercancel", cancelActiveDrag);
+    window.addEventListener("blur", cancelActiveDrag);
+    return () => {
+      window.removeEventListener("pointerup", cancelActiveDrag);
+      window.removeEventListener("pointercancel", cancelActiveDrag);
+      window.removeEventListener("blur", cancelActiveDrag);
+    };
+  }, []);
+
   function startPointer(event: PointerEvent<HTMLButtonElement>): void {
     if (event.button !== 0) return;
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -93,7 +117,7 @@ export function PetView(): JSX.Element {
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
     const distance = Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY);
-    if (!drag.dragging && distance > 4) {
+    if (!drag.dragging && distance > DRAG_START_DISTANCE_PX) {
       drag.dragging = true;
       window.pawpal.petDragStart({ offsetX: drag.startX, offsetY: drag.startY });
     }
@@ -102,22 +126,17 @@ export function PetView(): JSX.Element {
   function stopPointer(event: PointerEvent<HTMLButtonElement>): void {
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+    const shouldReleaseCapture = event.currentTarget.hasPointerCapture(event.pointerId);
+    finishPointerDrag(true);
+    if (shouldReleaseCapture) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
-    dragRef.current = null;
-    if (drag.dragging) {
-      window.pawpal.petDragStop();
-      return;
-    }
-    window.pawpal.petClicked();
   }
 
   function cancelPointer(event: PointerEvent<HTMLButtonElement>): void {
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-    dragRef.current = null;
-    if (drag.dragging) window.pawpal.petDragStop();
+    finishPointerDrag(false);
   }
 
   return (
@@ -162,6 +181,7 @@ export function PetView(): JSX.Element {
         }`}
         onPointerCancel={cancelPointer}
         onPointerDown={startPointer}
+        onLostPointerCapture={() => finishPointerDrag(false)}
         onPointerMove={movePointer}
         onPointerUp={stopPointer}
         type="button"

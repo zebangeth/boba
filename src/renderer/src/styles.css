@@ -30,7 +30,7 @@ textarea {
   background: transparent;
   display: flex;
   flex-direction: column;
-  height: 290px;
+  height: 340px;
   justify-content: flex-end;
   padding: 0 4px;
   pointer-events: none;

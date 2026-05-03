@@ -9,7 +9,7 @@ export const STORE_NAME = "pawpal";
 
 export const PET_WINDOW = {
   width: 220,
-  height: 290
+  height: 340
 } as const;
 
 export const SETTINGS_WINDOW = {

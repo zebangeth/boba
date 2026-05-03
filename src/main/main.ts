@@ -81,6 +81,7 @@ let hydrationDueAt: number | null = null;
 let focusEndsAt: number | null = null;
 let bubbleTimer: NodeJS.Timeout | null = null;
 let dragTimer: NodeJS.Timeout | null = null;
+let dragSafetyTimer: NodeJS.Timeout | null = null;
 let breakRunVelocity: PetPosition = { x: 0, y: 0 };
 let breakRunFormatter: ((seconds: number) => string) | null = null;
 let nextBreakRunTurnAt = 0;
@@ -332,10 +333,12 @@ function createPetWindow(): void {
     publishSnapshot();
   });
   petWindow.on("hide", () => {
+    stopPetDrag();
     updateTrayMenu();
     publishSnapshot();
   });
   petWindow.on("closed", () => {
+    stopPetDrag();
     petWindow = null;
     updateTrayMenu();
     publishSnapshot();
@@ -525,16 +528,26 @@ function startPetDrag(offset: { offsetX: number; offsetY: number }): void {
     y: Math.min(Math.max(Math.round(offset.offsetY), 0), PET_WINDOW.height)
   };
   if (dragTimer) clearInterval(dragTimer);
+  if (dragSafetyTimer) clearTimeout(dragSafetyTimer);
   movePetWithCursor();
   dragTimer = setInterval(movePetWithCursor, 16);
+  dragSafetyTimer = setTimeout(stopPetDrag, 15_000);
 }
 
 function stopPetDrag(): void {
-  if (!dragTimer) return;
-  clearInterval(dragTimer);
-  dragTimer = null;
-  persistPetPosition();
-  sendToAll("app:snapshot", snapshot());
+  const wasDragging = Boolean(dragTimer || dragSafetyTimer);
+  if (dragTimer) {
+    clearInterval(dragTimer);
+    dragTimer = null;
+  }
+  if (dragSafetyTimer) {
+    clearTimeout(dragSafetyTimer);
+    dragSafetyTimer = null;
+  }
+  if (wasDragging) {
+    persistPetPosition();
+    sendToAll("app:snapshot", snapshot());
+  }
 }
 
 function clearBreakRunTimers(): void {
@@ -1054,7 +1067,8 @@ app.on("before-quit", () => {
     distractionTimer,
     distractionStartupTimer,
     bubbleTimer,
-    dragTimer
+    dragTimer,
+    dragSafetyTimer
   ]) {
     if (timer) clearTimeout(timer);
   }
