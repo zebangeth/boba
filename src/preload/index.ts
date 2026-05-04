@@ -18,6 +18,7 @@ function onChannel<T>(channel: string, callback: (payload: T) => void): Unsubscr
 
 const api = {
   getSnapshot: (): Promise<AppSnapshot> => ipcRenderer.invoke("app:get-snapshot"),
+  openReleaseNotes: (): void => ipcRenderer.send("app:open-release-notes"),
   petClicked: (): void => ipcRenderer.send("pet:clicked"),
   petContextMenu: (): void => ipcRenderer.send("pet:context-menu"),
   petDragStart: (offset: { offsetX: number; offsetY: number }): void =>

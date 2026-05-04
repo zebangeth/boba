@@ -1,6 +1,17 @@
 import { join, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
-import { app, BrowserWindow, ipcMain, Menu, nativeTheme, net, protocol, screen, Tray } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  nativeTheme,
+  net,
+  protocol,
+  screen,
+  shell,
+  Tray
+} from "electron";
 import Store from "electron-store";
 import {
   createEmptyStats,
@@ -30,6 +41,7 @@ import {
   IS_DEV,
   PET_WINDOW,
   PRELOAD_PATH,
+  RELEASES_URL,
   RENDERER_HTML_PATH,
   SETTINGS_WINDOW,
   STORE_NAME
@@ -181,6 +193,10 @@ function resetTodayStats(): void {
 
 function snapshot(): AppSnapshot {
   return {
+    appInfo: {
+      version: app.getVersion(),
+      releaseNotesUrl: RELEASES_URL
+    },
     settings: getSettings(),
     stats: getStats(),
     statsHistory: getStatsHistory(),
@@ -996,6 +1012,11 @@ function handleBubbleAction(actionId: string): void {
 
 function registerIpc(): void {
   ipcMain.handle("app:get-snapshot", () => snapshot());
+  ipcMain.on("app:open-release-notes", () => {
+    void shell.openExternal(RELEASES_URL).catch((error) => {
+      console.error("Failed to open PawPal releases:", error);
+    });
+  });
   ipcMain.on("pet:clicked", () => {
     if (blockingMode) return;
     happyFeedback(null);

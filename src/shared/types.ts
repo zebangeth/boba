@@ -77,6 +77,7 @@ export type DistractionStatus = {
 };
 
 export type AppSnapshot = {
+  appInfo: AppInfo;
   settings: Settings;
   stats: TodayStats;
   statsHistory: StatsHistory;
@@ -87,6 +88,11 @@ export type AppSnapshot = {
   blockingMode: BlockingMode;
   focusActive: boolean;
   dogVisible: boolean;
+};
+
+export type AppInfo = {
+  version: string;
+  releaseNotesUrl: string;
 };
 
 export type DemoTrigger =

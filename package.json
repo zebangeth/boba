@@ -5,14 +5,15 @@
   "author": "zebangeth",
   "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@9.15.9",
   "main": "out/main/main.js",
   "scripts": {
     "dev": "electron-vite dev",
-    "build": "pnpm typecheck && electron-vite build",
+    "build": "tsc --noEmit && electron-vite build",
     "typecheck": "tsc --noEmit",
-    "dist": "pnpm build && electron-builder --mac --win",
-    "dist:mac": "pnpm build && electron-builder --mac",
-    "dist:win": "pnpm build && electron-builder --win"
+    "dist": "tsc --noEmit && electron-vite build && electron-builder --mac --win",
+    "dist:mac": "tsc --noEmit && electron-vite build && electron-builder --mac",
+    "dist:win": "tsc --noEmit && electron-vite build && electron-builder --win"
   },
   "build": {
     "appId": "com.pawpal.app",
