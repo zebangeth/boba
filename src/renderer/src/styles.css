@@ -548,6 +548,13 @@ textarea {
   outline: 0;
 }
 
+.pref-static-value {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
 .pref-chips {
   flex: 1;
   max-width: 100%;

@@ -440,6 +440,24 @@ export function SettingsView(): JSX.Element {
         </section>
       )}
 
+      <section className="prefs__group">
+        <h2 className="prefs__group-title">{labels.about}</h2>
+        <Row
+          label={labels.version}
+          control={
+            <span className="pref-static-value">{snapshot.appInfo.version || labels.none}</span>
+          }
+        />
+        <Row
+          label={labels.releaseNotes}
+          control={
+            <button type="button" className="pref-button" onClick={window.pawpal.openReleaseNotes}>
+              {labels.openReleaseNotes}
+            </button>
+          }
+        />
+      </section>
+
       <section className="prefs__group prefs__group--quiet">
         <button
           type="button"

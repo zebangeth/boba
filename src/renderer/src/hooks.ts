@@ -12,6 +12,10 @@ const initialStats: TodayStats = {
 
 export function useSnapshot(): AppSnapshot {
   const [snapshot, setSnapshot] = useState<AppSnapshot>({
+    appInfo: {
+      version: "",
+      releaseNotesUrl: ""
+    },
     settings: DEFAULT_SETTINGS,
     stats: initialStats,
     statsHistory: {},
