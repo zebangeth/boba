@@ -16,6 +16,14 @@ export function useSnapshot(): AppSnapshot {
       version: "",
       releaseNotesUrl: ""
     },
+    updateCheck: {
+      status: "idle",
+      currentVersion: "",
+      latestVersion: null,
+      releaseUrl: "",
+      checkedAt: null,
+      error: null
+    },
     settings: DEFAULT_SETTINGS,
     stats: initialStats,
     statsHistory: {},

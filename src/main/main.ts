@@ -30,7 +30,8 @@ import type {
   Settings,
   StatsHistory,
   SpeechBubble,
-  TodayStats
+  TodayStats,
+  UpdateCheckResult
 } from "../shared/types";
 import {
   APP_NAME,
@@ -41,6 +42,7 @@ import {
   IS_DEV,
   PET_WINDOW,
   PRELOAD_PATH,
+  RELEASES_API_URL,
   RELEASES_URL,
   RENDERER_HTML_PATH,
   SETTINGS_WINDOW,
@@ -108,6 +110,14 @@ let distractionStatus: DistractionStatus = {
   lastWarningAt: null,
   error: null
 };
+let updateCheck: UpdateCheckResult = {
+  status: "idle",
+  currentVersion: app.getVersion(),
+  latestVersion: null,
+  releaseUrl: RELEASES_URL,
+  checkedAt: null,
+  error: null
+};
 
 function getSettings(): Settings {
   const stored = store.get("settings");
@@ -129,12 +139,38 @@ function setSettings(next: Settings): void {
     language: resolveLanguage(next.language),
     petAppearanceId: resolvePetAppearanceId(next.petAppearanceId)
   };
+  applyLaunchAtLoginPreference(normalized.launchAtLoginEnabled);
   store.set("settings", normalized);
-  sendToAll("settings:updated", normalized);
+  sendToAll("settings:updated", getSettingsWithSystemState());
   settingsWindow?.setTitle(`${APP_NAME} ${text().menu.settings}`);
   scheduleReminderTimers();
   scheduleDistractionDetection();
   updateTrayMenu();
+}
+
+function supportsLoginItemSettings(): boolean {
+  return (process.platform === "darwin" || process.platform === "win32") && app.isPackaged;
+}
+
+function applyLaunchAtLoginPreference(enabled: boolean): void {
+  if (!supportsLoginItemSettings()) return;
+  app.setLoginItemSettings({
+    openAtLogin: enabled,
+    openAsHidden: true
+  });
+}
+
+function getLaunchAtLoginState(fallback: boolean): boolean {
+  if (!supportsLoginItemSettings()) return fallback;
+  return app.getLoginItemSettings().openAtLogin;
+}
+
+function getSettingsWithSystemState(): Settings {
+  const settings = getSettings();
+  return {
+    ...settings,
+    launchAtLoginEnabled: getLaunchAtLoginState(settings.launchAtLoginEnabled)
+  };
 }
 
 function getStatsHistory(): StatsHistory {
@@ -197,7 +233,8 @@ function snapshot(): AppSnapshot {
       version: app.getVersion(),
       releaseNotesUrl: RELEASES_URL
     },
-    settings: getSettings(),
+    updateCheck,
+    settings: getSettingsWithSystemState(),
     stats: getStats(),
     statsHistory: getStatsHistory(),
     timers: {
@@ -813,6 +850,129 @@ function happyFeedback(message: string | null = pick(text().bubble.woof), after?
   }, 1900);
 }
 
+function normalizeVersion(version: string): string {
+  return version.trim().replace(/^v/i, "");
+}
+
+function compareVersions(left: string, right: string): number {
+  const [leftCore, leftPreRelease = ""] = normalizeVersion(left).split("-", 2);
+  const [rightCore, rightPreRelease = ""] = normalizeVersion(right).split("-", 2);
+  const leftParts = leftCore.split(".").map((part) => Number.parseInt(part, 10) || 0);
+  const rightParts = rightCore.split(".").map((part) => Number.parseInt(part, 10) || 0);
+  const length = Math.max(leftParts.length, rightParts.length);
+
+  for (let index = 0; index < length; index += 1) {
+    const leftPart = leftParts[index] ?? 0;
+    const rightPart = rightParts[index] ?? 0;
+    if (leftPart > rightPart) return 1;
+    if (leftPart < rightPart) return -1;
+  }
+
+  if (!leftPreRelease && rightPreRelease) return 1;
+  if (leftPreRelease && !rightPreRelease) return -1;
+  return leftPreRelease.localeCompare(rightPreRelease);
+}
+
+function isGitHubReleasePayload(value: unknown): value is {
+  tag_name?: unknown;
+  html_url?: unknown;
+  name?: unknown;
+} {
+  return typeof value === "object" && value !== null;
+}
+
+function setUpdateCheck(next: UpdateCheckResult): void {
+  updateCheck = next;
+  publishSnapshot();
+}
+
+function openReleaseNotes(): void {
+  void shell.openExternal(updateCheck.releaseUrl || RELEASES_URL).catch((error) => {
+    console.error("Failed to open PawPal releases:", error);
+  });
+}
+
+function showUpdateAvailableNotice(result: UpdateCheckResult): void {
+  if (blockingMode || result.status !== "available" || !result.latestVersion) return;
+  ensurePetWindowVisible();
+  setPetState("happy");
+  showBubble({
+    id: "update-available",
+    message: pick(text().bubble.updateAvailable)(result.latestVersion),
+    actions: [
+      { id: "app:open-release-notes", label: text().settings.openReleaseNotes, kind: "primary" }
+    ],
+    autoDismissMs: 12000
+  });
+  setTimeout(() => {
+    if (!blockingMode && petState === "happy") setPetState(focusActive ? "focusGuard" : "idle");
+  }, 12_100);
+}
+
+async function checkForUpdates(options: { notifyAvailable?: boolean } = {}): Promise<UpdateCheckResult> {
+  setUpdateCheck({
+    ...updateCheck,
+    status: "checking",
+    currentVersion: app.getVersion(),
+    checkedAt: Date.now(),
+    error: null
+  });
+
+  try {
+    const response = await net.fetch(RELEASES_API_URL, {
+      headers: {
+        Accept: "application/vnd.github+json",
+        "User-Agent": `${APP_NAME}/${app.getVersion()}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`GitHub returned ${response.status}`);
+    }
+
+    const payload: unknown = await response.json();
+    if (!isGitHubReleasePayload(payload)) {
+      throw new Error("Unexpected release response");
+    }
+
+    const latestVersion =
+      typeof payload.tag_name === "string"
+        ? payload.tag_name
+        : typeof payload.name === "string"
+          ? payload.name
+          : "";
+
+    if (!latestVersion) {
+      throw new Error("Latest release has no version tag");
+    }
+
+    const releaseUrl = typeof payload.html_url === "string" ? payload.html_url : RELEASES_URL;
+    const currentVersion = app.getVersion();
+    const result: UpdateCheckResult = {
+      status: compareVersions(latestVersion, currentVersion) > 0 ? "available" : "up-to-date",
+      currentVersion,
+      latestVersion,
+      releaseUrl,
+      checkedAt: Date.now(),
+      error: null
+    };
+
+    setUpdateCheck(result);
+    if (options.notifyAvailable) showUpdateAvailableNotice(result);
+    return result;
+  } catch (error) {
+    const result: UpdateCheckResult = {
+      ...updateCheck,
+      status: "error",
+      currentVersion: app.getVersion(),
+      checkedAt: Date.now(),
+      error: error instanceof Error ? error.message : String(error)
+    };
+    setUpdateCheck(result);
+    return result;
+  }
+}
+
 function triggerBreakReminder(fromDemo: boolean): void {
   if (blockingMode === "focusWarning" || blockingMode === "breakRun") return;
   if (!fromDemo && (focusActive || breakMutedToday)) {
@@ -942,6 +1102,12 @@ function triggerDemo(trigger: DemoTrigger): void {
 }
 
 function handleBubbleAction(actionId: string): void {
+  if (actionId === "app:open-release-notes") {
+    hideBubble();
+    setPetState(focusActive ? "focusGuard" : "idle");
+    openReleaseNotes();
+    return;
+  }
   if (actionId === "break-run:done") {
     finishBreakRun();
     return;
@@ -1012,11 +1178,8 @@ function handleBubbleAction(actionId: string): void {
 
 function registerIpc(): void {
   ipcMain.handle("app:get-snapshot", () => snapshot());
-  ipcMain.on("app:open-release-notes", () => {
-    void shell.openExternal(RELEASES_URL).catch((error) => {
-      console.error("Failed to open PawPal releases:", error);
-    });
-  });
+  ipcMain.handle("app:check-for-updates", () => checkForUpdates({ notifyAvailable: true }));
+  ipcMain.on("app:open-release-notes", openReleaseNotes);
   ipcMain.on("pet:clicked", () => {
     if (blockingMode) return;
     happyFeedback(null);
@@ -1070,6 +1233,9 @@ app.whenReady().then(() => {
   scheduleDistractionDetection();
   if (IS_DEV) {
     createSettingsWindow();
+  }
+  if (getSettings().checkUpdatesOnLaunchEnabled) {
+    setTimeout(() => void checkForUpdates({ notifyAvailable: true }), 1500);
   }
 
   app.on("activate", () => {

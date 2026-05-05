@@ -716,6 +716,15 @@ textarea {
   border-color: var(--accent);
 }
 
+.pref-button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.pref-button:disabled:hover {
+  border-color: var(--rule-strong);
+}
+
 .pref-button.is-primary {
   background: var(--accent);
   border-color: var(--accent);
@@ -724,6 +733,13 @@ textarea {
 
 .pref-button.is-primary:hover {
   background: #a26d2c;
+}
+
+.pref-button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
 }
 
 .pref-chip-button {
@@ -906,6 +922,10 @@ textarea {
     justify-content: flex-start;
     max-width: 100%;
     width: 100%;
+  }
+
+  .pref-button-group {
+    justify-content: flex-start;
   }
 }
 

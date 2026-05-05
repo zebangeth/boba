@@ -6,6 +6,7 @@ const __dirname = dirname(__filename);
 
 export const APP_NAME = "PawPal";
 export const STORE_NAME = "pawpal";
+export const RELEASES_API_URL = "https://api.github.com/repos/zebangeth/PawPal/releases/latest";
 export const RELEASES_URL = "https://github.com/zebangeth/PawPal/releases";
 
 export const PET_WINDOW = {

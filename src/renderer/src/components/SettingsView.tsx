@@ -2,7 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import type { JSX, ReactNode } from "react";
 import { i18n, LANGUAGE_OPTIONS, resolveLanguage } from "../../../shared/i18n";
 import { petAppearanceOptions, resolvePetAppearanceId } from "../../../shared/petAppearances";
-import type { DemoTrigger, PetAppearanceId, Settings } from "../../../shared/types";
+import type {
+  DemoTrigger,
+  PetAppearanceId,
+  Settings,
+  UpdateCheckResult
+} from "../../../shared/types";
 import { getPetAsset } from "../assets";
 import { distractionHelp, formatDistractionState, formatTimer, formatTimestamp, localeFor } from "../format";
 import { useNow, useSnapshot } from "../hooks";
@@ -202,9 +207,23 @@ function StatCard({
   );
 }
 
+function formatUpdateStatus(updateCheck: UpdateCheckResult, labels: SettingsCopy): string {
+  if (updateCheck.status === "checking") return labels.updateChecking;
+  if (updateCheck.status === "available" && updateCheck.latestVersion) {
+    return labels.updateAvailable(updateCheck.latestVersion);
+  }
+  if (updateCheck.status === "up-to-date") {
+    return labels.updateCurrent(updateCheck.currentVersion);
+  }
+  if (updateCheck.status === "error") {
+    return labels.updateError(updateCheck.error ?? labels.none);
+  }
+  return labels.updateIdle;
+}
+
 export function SettingsView(): JSX.Element {
   const snapshot = useSnapshot();
-  const { settings, stats } = snapshot;
+  const { settings, stats, updateCheck } = snapshot;
   const [draft, setDraft] = useState(settings);
   const [settingsDirty, setSettingsDirty] = useState(false);
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
@@ -235,6 +254,10 @@ export function SettingsView(): JSX.Element {
   function updateDraft(partial: Partial<Settings>): void {
     setDraft((current) => ({ ...current, ...partial }));
     setSettingsDirty(true);
+  }
+
+  async function checkForUpdates(): Promise<void> {
+    await window.pawpal.checkForUpdates();
   }
 
   return (
@@ -441,11 +464,71 @@ export function SettingsView(): JSX.Element {
       )}
 
       <section className="prefs__group">
+        <h2 className="prefs__group-title">{labels.system}</h2>
+        <Row
+          label={labels.launchAtLogin}
+          hint={labels.launchAtLoginHelp}
+          control={
+            <ToggleControl
+              checked={draft.launchAtLoginEnabled}
+              onChange={(launchAtLoginEnabled) => updateDraft({ launchAtLoginEnabled })}
+              ariaLabel={labels.launchAtLogin}
+            />
+          }
+        />
+        <Row
+          label={labels.updateCheckOnLaunch}
+          hint={labels.updateCheckOnLaunchHelp}
+          control={
+            <ToggleControl
+              checked={draft.checkUpdatesOnLaunchEnabled}
+              onChange={(checkUpdatesOnLaunchEnabled) =>
+                updateDraft({ checkUpdatesOnLaunchEnabled })
+              }
+              ariaLabel={labels.updateCheckOnLaunch}
+            />
+          }
+        />
+      </section>
+
+      <section className="prefs__group">
         <h2 className="prefs__group-title">{labels.about}</h2>
         <Row
           label={labels.version}
+          hint={
+            updateCheck.latestVersion
+              ? labels.latestVersion(updateCheck.latestVersion)
+              : undefined
+          }
           control={
             <span className="pref-static-value">{snapshot.appInfo.version || labels.none}</span>
+          }
+        />
+        <Row
+          label={labels.updates}
+          hint={formatUpdateStatus(updateCheck, labels)}
+          control={
+            <div className="pref-button-group">
+              <button
+                type="button"
+                className="pref-button"
+                disabled={updateCheck.status === "checking"}
+                onClick={() => void checkForUpdates()}
+              >
+                {updateCheck.status === "checking"
+                  ? labels.checkingUpdates
+                  : labels.checkForUpdates}
+              </button>
+              {updateCheck.status === "available" ? (
+                <button
+                  type="button"
+                  className="pref-button is-primary"
+                  onClick={window.pawpal.openReleaseNotes}
+                >
+                  {labels.openReleaseNotes}
+                </button>
+              ) : null}
+            </div>
           }
         />
         <Row

@@ -4,6 +4,8 @@ export const DEFAULT_SETTINGS: Settings = {
   language: "zh-CN",
   petAppearanceId: "lineDog",
   onboardingDismissed: false,
+  launchAtLoginEnabled: false,
+  checkUpdatesOnLaunchEnabled: false,
   breakReminderEnabled: true,
   breakIntervalMinutes: 45,
   hydrationReminderEnabled: true,

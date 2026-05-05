@@ -75,6 +75,10 @@ export const I18N = {
         "好，我继续盯着~",
         "嗯！回去干活吧",
         "我也继续专心啦"
+      ],
+      updateAvailable: [
+        (version: string) => `发现新版本 ${version}，去看看更新吧`,
+        (version: string) => `PawPal 有新版本 ${version} 啦`
       ]
     },
     actions: {
@@ -107,10 +111,24 @@ export const I18N = {
         "PawPal 会住在菜单栏和屏幕底部，定时提醒你休息、喝水和保持专注。分心检测目前仅支持 macOS，需要在系统设置里允许辅助功能权限。",
       dismissWelcome: "知道了",
       appearance: "外观",
+      system: "系统",
+      launchAtLogin: "开机自启",
+      launchAtLoginHelp: "正式打包版本会在 macOS 或 Windows 登录后启动；开发环境只保存偏好，不注册系统登录项。",
       about: "关于",
       version: "版本",
       releaseNotes: "更新说明",
       openReleaseNotes: "打开 Releases",
+      updates: "更新",
+      checkForUpdates: "检查更新",
+      checkingUpdates: "检查中…",
+      updateCheckOnLaunch: "启动时检查更新",
+      updateCheckOnLaunchHelp: "开启后每次启动会检查 GitHub 最新 Release；关闭时只在你手动检查时联网。",
+      updateIdle: "还没有检查更新。",
+      updateAvailable: (version: string) => `发现新版本 ${version}`,
+      updateCurrent: (version: string) => `已是最新版本 ${version}`,
+      updateError: (message: string) => `检查失败：${message}`,
+      updateChecking: "正在检查 GitHub Releases…",
+      latestVersion: (version: string) => `最新版本：${version}`,
       quickActions: "快捷操作",
       testTools: "测试工具",
       language: "语言",
@@ -250,6 +268,10 @@ export const I18N = {
         "Good, I'll keep watching~",
         "Mm! Back to work then",
         "I'll keep focusing too~"
+      ],
+      updateAvailable: [
+        (version: string) => `Version ${version} is available. Want to see what's new?`,
+        (version: string) => `PawPal has a new version: ${version}.`
       ]
     },
     actions: {
@@ -282,10 +304,26 @@ export const I18N = {
         "PawPal lives in the menu bar and near the bottom of your screen. It reminds you to take breaks, drink water, and stay focused. Distraction detection is macOS-only and requires accessibility permissions.",
       dismissWelcome: "Got it",
       appearance: "Appearance",
+      system: "System",
+      launchAtLogin: "Launch at Login",
+      launchAtLoginHelp:
+        "Packaged macOS and Windows builds will start after login. Development builds only save the preference.",
       about: "About",
       version: "Version",
       releaseNotes: "Release Notes",
       openReleaseNotes: "Open Releases",
+      updates: "Updates",
+      checkForUpdates: "Check for Updates",
+      checkingUpdates: "Checking…",
+      updateCheckOnLaunch: "Check Updates on Launch",
+      updateCheckOnLaunchHelp:
+        "When enabled, PawPal checks the latest GitHub Release on startup. Otherwise it only checks when you ask.",
+      updateIdle: "Updates have not been checked yet.",
+      updateAvailable: (version: string) => `Version ${version} is available.`,
+      updateCurrent: (version: string) => `You are on the latest version ${version}.`,
+      updateError: (message: string) => `Update check failed: ${message}`,
+      updateChecking: "Checking GitHub Releases…",
+      latestVersion: (version: string) => `Latest version: ${version}`,
       quickActions: "Quick Actions",
       testTools: "Test Tools",
       language: "Language",

@@ -39,6 +39,8 @@ export type Settings = {
   language: Language;
   petAppearanceId: PetAppearanceId;
   onboardingDismissed: boolean;
+  launchAtLoginEnabled: boolean;
+  checkUpdatesOnLaunchEnabled: boolean;
   breakReminderEnabled: boolean;
   breakIntervalMinutes: number;
   hydrationReminderEnabled: boolean;
@@ -78,6 +80,7 @@ export type DistractionStatus = {
 
 export type AppSnapshot = {
   appInfo: AppInfo;
+  updateCheck: UpdateCheckResult;
   settings: Settings;
   stats: TodayStats;
   statsHistory: StatsHistory;
@@ -93,6 +96,22 @@ export type AppSnapshot = {
 export type AppInfo = {
   version: string;
   releaseNotesUrl: string;
+};
+
+export type UpdateCheckStatus =
+  | "idle"
+  | "checking"
+  | "available"
+  | "up-to-date"
+  | "error";
+
+export type UpdateCheckResult = {
+  status: UpdateCheckStatus;
+  currentVersion: string;
+  latestVersion: string | null;
+  releaseUrl: string;
+  checkedAt: number | null;
+  error: string | null;
 };
 
 export type DemoTrigger =
