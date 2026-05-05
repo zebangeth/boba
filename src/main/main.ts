@@ -42,14 +42,24 @@ import {
   IS_DEV,
   PET_WINDOW,
   PRELOAD_PATH,
-  RELEASES_API_URL,
   RELEASES_URL,
   RENDERER_HTML_PATH,
   SETTINGS_WINDOW,
   STORE_NAME
 } from "./config";
 import { classifyDistraction, isPermissionError, readActiveWindow } from "./distraction";
+import { applyLaunchAtLoginPreference, getLaunchAtLoginState } from "./loginItem";
+import {
+  buildApplicationMenuTemplate,
+  buildPetContextMenuTemplate,
+  buildTrayMenuTemplate
+} from "./menus";
 import { createTrayImage } from "./trayIcon";
+import {
+  checkGitHubReleasesForUpdates,
+  createCheckingUpdateCheck,
+  createInitialUpdateCheck
+} from "./updates";
 
 type PetPosition = {
   x: number;
@@ -110,14 +120,7 @@ let distractionStatus: DistractionStatus = {
   lastWarningAt: null,
   error: null
 };
-let updateCheck: UpdateCheckResult = {
-  status: "idle",
-  currentVersion: app.getVersion(),
-  latestVersion: null,
-  releaseUrl: RELEASES_URL,
-  checkedAt: null,
-  error: null
-};
+let updateCheck: UpdateCheckResult = createInitialUpdateCheck();
 
 function getSettings(): Settings {
   const stored = store.get("settings");
@@ -146,23 +149,6 @@ function setSettings(next: Settings): void {
   scheduleReminderTimers();
   scheduleDistractionDetection();
   updateTrayMenu();
-}
-
-function supportsLoginItemSettings(): boolean {
-  return (process.platform === "darwin" || process.platform === "win32") && app.isPackaged;
-}
-
-function applyLaunchAtLoginPreference(enabled: boolean): void {
-  if (!supportsLoginItemSettings()) return;
-  app.setLoginItemSettings({
-    openAtLogin: enabled,
-    openAsHidden: true
-  });
-}
-
-function getLaunchAtLoginState(fallback: boolean): boolean {
-  if (!supportsLoginItemSettings()) return fallback;
-  return app.getLoginItemSettings().openAtLogin;
 }
 
 function getSettingsWithSystemState(): Settings {
@@ -455,111 +441,64 @@ function createTray(): void {
   updateTrayMenu();
 }
 
-function actionMenuItems(): Electron.MenuItemConstructorOptions[] {
-  const dogVisible = Boolean(petWindow?.isVisible());
-  const labels = text().menu;
-  return [
-    {
-      label: dogVisible ? labels.hideDog : labels.showDog,
-      click: () => {
-        if (!petWindow) createPetWindow();
-        if (!petWindow) return;
-        if (petWindow.isVisible()) petWindow.hide();
-        else petWindow.showInactive();
-        updateTrayMenu();
-        sendToAll("app:snapshot", snapshot());
-      }
-    },
-    {
-      label: focusActive ? labels.stopFocusMode : labels.startFocusMode,
-      click: () => {
-        if (focusActive) stopFocusMode(true);
-        else startFocusMode();
-      }
-    },
-    ...(app.isPackaged
-      ? []
-      : [
-          { type: "separator" as const },
-          { label: labels.demoBreakReminder, click: () => triggerDemo("break") },
-          { label: labels.demoHydrationReminder, click: () => triggerDemo("hydration") },
-          { label: labels.demoFocusWarning, click: () => triggerDemo("focusWarning") },
-          { label: labels.demoHappyReaction, click: () => triggerDemo("happy") }
-        ]),
-    { type: "separator" },
-    { label: labels.settings, click: createSettingsWindow }
-  ];
+function togglePetWindowVisibility(): void {
+  if (!petWindow) createPetWindow();
+  if (!petWindow) return;
+  if (petWindow.isVisible()) petWindow.hide();
+  else petWindow.showInactive();
+  updateTrayMenu();
+  sendToAll("app:snapshot", snapshot());
+}
+
+function hidePetWindowFromMenu(): void {
+  petWindow?.hide();
+  updateTrayMenu();
+  sendToAll("app:snapshot", snapshot());
+}
+
+function menuState() {
+  return {
+    appName: APP_NAME,
+    dogVisible: Boolean(petWindow?.isVisible()),
+    focusActive,
+    isPackaged: app.isPackaged
+  };
+}
+
+function menuActions() {
+  return {
+    toggleDog: togglePetWindowVisibility,
+    hideDog: hidePetWindowFromMenu,
+    startFocus: startFocusMode,
+    stopFocusFromMenu: () => stopFocusMode(true),
+    stopFocusFromContext: () => stopFocusMode(false),
+    openSettings: createSettingsWindow,
+    quit: () => app.quit(),
+    triggerDemo
+  };
 }
 
 function updateApplicationMenu(): void {
   const labels = text().menu;
-  const template: Electron.MenuItemConstructorOptions[] = [
-    {
-      label: APP_NAME,
-      submenu: [
-        ...actionMenuItems(),
-        { type: "separator" },
-        { role: "quit", label: labels.quit }
-      ]
-    },
-    { role: "editMenu" },
-    { role: "windowMenu" }
-  ];
-
-  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate(buildApplicationMenuTemplate(labels, menuState(), menuActions()))
+  );
 }
 
 function updateTrayMenu(): void {
   updateApplicationMenu();
   if (!tray) return;
   const labels = text().menu;
-  const template: Electron.MenuItemConstructorOptions[] = [
-    { label: APP_NAME, enabled: false },
-    { type: "separator" },
-    ...actionMenuItems(),
-    { type: "separator" },
-    {
-      label: labels.quit,
-      click: () => {
-        app.quit();
-      }
-    }
-  ];
-  tray.setContextMenu(Menu.buildFromTemplate(template));
+  tray.setContextMenu(
+    Menu.buildFromTemplate(buildTrayMenuTemplate(labels, menuState(), menuActions()))
+  );
 }
 
 function showPetContextMenu(): void {
   const labels = text().menu;
-  const template: Electron.MenuItemConstructorOptions[] = [
-    { label: labels.settings, click: createSettingsWindow },
-    {
-      label: focusActive ? labels.stopFocusMode : labels.startFocusMode,
-      click: () => {
-        if (focusActive) stopFocusMode(false);
-        else startFocusMode();
-      }
-    },
-    ...(app.isPackaged
-      ? []
-      : [
-          { type: "separator" as const },
-          { label: labels.demoBreakReminder, click: () => triggerDemo("break") },
-          { label: labels.demoHydrationReminder, click: () => triggerDemo("hydration") },
-          { label: labels.demoFocusWarning, click: () => triggerDemo("focusWarning") },
-          { label: labels.demoHappyReaction, click: () => triggerDemo("happy") }
-        ]),
-    { type: "separator" },
-    {
-      label: labels.hideDog,
-      click: () => {
-        petWindow?.hide();
-        updateTrayMenu();
-        sendToAll("app:snapshot", snapshot());
-      }
-    }
-  ];
-
-  Menu.buildFromTemplate(template).popup({ window: petWindow ?? undefined });
+  Menu.buildFromTemplate(buildPetContextMenuTemplate(labels, menuState(), menuActions())).popup({
+    window: petWindow ?? undefined
+  });
 }
 
 function movePetWithCursor(): void {
@@ -850,37 +789,6 @@ function happyFeedback(message: string | null = pick(text().bubble.woof), after?
   }, 1900);
 }
 
-function normalizeVersion(version: string): string {
-  return version.trim().replace(/^v/i, "");
-}
-
-function compareVersions(left: string, right: string): number {
-  const [leftCore, leftPreRelease = ""] = normalizeVersion(left).split("-", 2);
-  const [rightCore, rightPreRelease = ""] = normalizeVersion(right).split("-", 2);
-  const leftParts = leftCore.split(".").map((part) => Number.parseInt(part, 10) || 0);
-  const rightParts = rightCore.split(".").map((part) => Number.parseInt(part, 10) || 0);
-  const length = Math.max(leftParts.length, rightParts.length);
-
-  for (let index = 0; index < length; index += 1) {
-    const leftPart = leftParts[index] ?? 0;
-    const rightPart = rightParts[index] ?? 0;
-    if (leftPart > rightPart) return 1;
-    if (leftPart < rightPart) return -1;
-  }
-
-  if (!leftPreRelease && rightPreRelease) return 1;
-  if (leftPreRelease && !rightPreRelease) return -1;
-  return leftPreRelease.localeCompare(rightPreRelease);
-}
-
-function isGitHubReleasePayload(value: unknown): value is {
-  tag_name?: unknown;
-  html_url?: unknown;
-  name?: unknown;
-} {
-  return typeof value === "object" && value !== null;
-}
-
 function setUpdateCheck(next: UpdateCheckResult): void {
   updateCheck = next;
   publishSnapshot();
@@ -910,67 +818,12 @@ function showUpdateAvailableNotice(result: UpdateCheckResult): void {
 }
 
 async function checkForUpdates(options: { notifyAvailable?: boolean } = {}): Promise<UpdateCheckResult> {
-  setUpdateCheck({
-    ...updateCheck,
-    status: "checking",
-    currentVersion: app.getVersion(),
-    checkedAt: Date.now(),
-    error: null
-  });
-
-  try {
-    const response = await net.fetch(RELEASES_API_URL, {
-      headers: {
-        Accept: "application/vnd.github+json",
-        "User-Agent": `${APP_NAME}/${app.getVersion()}`
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`GitHub returned ${response.status}`);
-    }
-
-    const payload: unknown = await response.json();
-    if (!isGitHubReleasePayload(payload)) {
-      throw new Error("Unexpected release response");
-    }
-
-    const latestVersion =
-      typeof payload.tag_name === "string"
-        ? payload.tag_name
-        : typeof payload.name === "string"
-          ? payload.name
-          : "";
-
-    if (!latestVersion) {
-      throw new Error("Latest release has no version tag");
-    }
-
-    const releaseUrl = typeof payload.html_url === "string" ? payload.html_url : RELEASES_URL;
-    const currentVersion = app.getVersion();
-    const result: UpdateCheckResult = {
-      status: compareVersions(latestVersion, currentVersion) > 0 ? "available" : "up-to-date",
-      currentVersion,
-      latestVersion,
-      releaseUrl,
-      checkedAt: Date.now(),
-      error: null
-    };
-
-    setUpdateCheck(result);
-    if (options.notifyAvailable) showUpdateAvailableNotice(result);
-    return result;
-  } catch (error) {
-    const result: UpdateCheckResult = {
-      ...updateCheck,
-      status: "error",
-      currentVersion: app.getVersion(),
-      checkedAt: Date.now(),
-      error: error instanceof Error ? error.message : String(error)
-    };
-    setUpdateCheck(result);
-    return result;
-  }
+  const checking = createCheckingUpdateCheck(updateCheck);
+  setUpdateCheck(checking);
+  const result = await checkGitHubReleasesForUpdates(checking);
+  setUpdateCheck(result);
+  if (options.notifyAvailable) showUpdateAvailableNotice(result);
+  return result;
 }
 
 function triggerBreakReminder(fromDemo: boolean): void {
