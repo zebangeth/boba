@@ -1,6 +1,6 @@
 export type Language = "zh-CN" | "en";
 
-export type PetAppearanceId = "lovartPuppy" | "lineDog";
+export type PetAppearanceId = "lovartPuppy" | "lineDog" | "xiaoJiMao";
 
 export type PetFacing = "left" | "right";
 

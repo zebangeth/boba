@@ -16,6 +16,7 @@ export type PetAppearanceManifest = {
 const goldenPuppy = (state: PetState, name: string): string =>
   `pet_assets/金毛 puppy/${state}/${name}`;
 const lineDog = (state: PetState, name: string): string => `pet_assets/线条小狗/${state}/${name}`;
+const xiaoJiMao = (state: PetState, name: string): string => `pet_assets/小鸡毛/${state}/${name}`;
 
 const STATE_FALLBACKS: Partial<Record<PetState, PetState>> = {
   breakDone: "happy",
@@ -156,11 +157,110 @@ export const PET_APPEARANCES: Record<PetAppearanceId, PetAppearanceManifest> = {
         path: lineDog("sleeping", "线条小狗第12弹_困.gif")
       }
     }
+  },
+  xiaoJiMao: {
+    id: "xiaoJiMao",
+    label: {
+      "zh-CN": "小鸡毛",
+      en: "Xiao Ji Mao"
+    },
+    fallback: {
+      path: xiaoJiMao("idle", "线条小狗第6弹_放松.gif"),
+      isPlaceholder: true
+    },
+    states: {
+      idle: {
+        path: [
+          xiaoJiMao("idle", "线条小狗第11弹_转圈.gif"),
+          xiaoJiMao("idle", "线条小狗第6弹_放松.gif"),
+          xiaoJiMao("idle", "线条小狗第6弹_晃脚脚.gif")
+        ]
+      },
+      sitting: {
+        path: xiaoJiMao("idle", "线条小狗第6弹_晃脚脚.gif"),
+        isPlaceholder: true
+      },
+      happy: {
+        path: [
+          xiaoJiMao("happy", "线条小狗第20弹_开心.gif"),
+          xiaoJiMao("happy", "线条小狗第6弹_开心.gif")
+        ]
+      },
+      breakPrompt: {
+        path: [
+          xiaoJiMao("breakPrompt", "线条小狗第10弹_在.gif"),
+          xiaoJiMao("breakPrompt", "线条小狗第10弹_摇尾巴.gif"),
+          xiaoJiMao("breakPrompt", "线条小狗第9弹_甩.gif")
+        ]
+      },
+      breakRunning: {
+        path: [
+          xiaoJiMao("breakRunning", "线条小狗第14弹_摇摆.gif"),
+          xiaoJiMao("breakRunning", "线条小狗第8弹_贴贴.gif"),
+          xiaoJiMao("breakRunning", "线条小狗第9弹_加油.gif")
+        ]
+      },
+      breakDone: {
+        path: [
+          xiaoJiMao("breakDone", "线条小狗第18弹_爱你.gif"),
+          xiaoJiMao("breakDone", "线条小狗第6弹_拍手.gif"),
+          xiaoJiMao("breakDone", "线条小狗第7弹_爱你.gif")
+        ]
+      },
+      hydrationPrompt: {
+        path: xiaoJiMao("hydrationPrompt", "线条小狗第11弹_吃手手.gif")
+      },
+      drinking: {
+        path: xiaoJiMao("drinking", "线条小狗第20弹_喝咖啡.gif")
+      },
+      hydrationDone: {
+        path: [
+          xiaoJiMao("hydrationDone", "很棒.gif"),
+          xiaoJiMao("hydrationDone", "线条小狗第8弹_扔心心.gif")
+        ]
+      },
+      focusGuard: {
+        path: [
+          xiaoJiMao("focusGuard", "线条小狗第18弹_工作.gif"),
+          xiaoJiMao("focusGuard", "线条小狗第6弹_写不动了.gif"),
+          xiaoJiMao("focusGuard", "线条小狗第9弹_写.gif")
+        ]
+      },
+      focusAlert: {
+        path: [
+          xiaoJiMao("focusAlert", "发现.gif"),
+          xiaoJiMao("focusAlert", "疑问.gif"),
+          xiaoJiMao("focusAlert", "线条小狗第20弹_警告.gif"),
+          xiaoJiMao("focusAlert", "线条小狗第6弹_惊讶.gif"),
+          xiaoJiMao("focusAlert", "线条小狗第8弹_哼.gif"),
+          xiaoJiMao("focusAlert", "线条小狗第9弹_疑问.gif")
+        ]
+      },
+      focusDone: {
+        path: [
+          xiaoJiMao("focusDone", "开心.gif"),
+          xiaoJiMao("focusDone", "很棒.gif"),
+          xiaoJiMao("focusDone", "线条小狗第14弹_庆祝.gif"),
+          xiaoJiMao("focusDone", "线条小狗第6弹_拍手.gif")
+        ]
+      },
+      sad: {
+        path: [
+          xiaoJiMao("sad", "线条小狗第14弹_大哭.gif"),
+          xiaoJiMao("sad", "线条小狗第6弹_呜呜.gif"),
+          xiaoJiMao("sad", "线条小狗第7弹_对不起.gif"),
+          xiaoJiMao("sad", "线条小狗第9弹_伤心.gif")
+        ]
+      },
+      sleeping: {
+        path: xiaoJiMao("sleeping", "线条小狗第14弹_难受.gif")
+      }
+    }
   }
 };
 
 export function resolvePetAppearanceId(value: unknown): PetAppearanceId {
-  if (value === "lineDog" || value === "lovartPuppy") return value;
+  if (value === "lineDog" || value === "lovartPuppy" || value === "xiaoJiMao") return value;
   return "lineDog";
 }
 
