@@ -45,6 +45,12 @@ import {
   SETTINGS_WINDOW,
   STORE_NAME
 } from "./config";
+import {
+  initialWindowBounds,
+  savedPositionFromBounds,
+  visibleWindowBounds
+} from "./displayPosition";
+import type { DisplayBounds, SavedWindowPosition } from "./displayPosition";
 import { classifyDistraction, isPermissionError, readActiveWindow } from "./distraction";
 import { applyLaunchAtLoginPreference, getLaunchAtLoginState } from "./loginItem";
 import {
@@ -66,16 +72,16 @@ import {
   createInitialUpdateCheck
 } from "./updates";
 
-type PetPosition = {
-  x: number;
-  y: number;
-};
-
 type StoreSchema = {
   settings: Settings;
   stats: TodayStats;
   statsHistory: StatsHistory;
-  petPosition?: PetPosition;
+  petPosition?: SavedWindowPosition;
+};
+
+type PetPosition = {
+  x: number;
+  y: number;
 };
 
 app.setName(APP_NAME);
@@ -105,6 +111,7 @@ let hydrationTimer: NodeJS.Timeout | null = null;
 let focusTimer: NodeJS.Timeout | null = null;
 let distractionTimer: NodeJS.Timeout | null = null;
 let distractionStartupTimer: NodeJS.Timeout | null = null;
+let displayChangeTimer: NodeJS.Timeout | null = null;
 let breakDueAt: number | null = null;
 let hydrationDueAt: number | null = null;
 let focusEndsAt: number | null = null;
@@ -251,41 +258,60 @@ function loadRenderer(win: BrowserWindow, route: "pet" | "settings"): void {
   void win.loadFile(rendererUrl(route), { hash: route });
 }
 
-function clampBoundsToWorkArea(bounds: Electron.Rectangle): Electron.Rectangle {
-  const center = {
-    x: bounds.x + Math.round(bounds.width / 2),
-    y: bounds.y + Math.round(bounds.height / 2)
-  };
-  const workArea = screen.getDisplayNearestPoint(center).workArea;
+function toDisplayBounds(display: Electron.Display): DisplayBounds {
   return {
-    ...bounds,
-    x: Math.min(Math.max(bounds.x, workArea.x), workArea.x + workArea.width - bounds.width),
-    y: Math.min(Math.max(bounds.y, workArea.y), workArea.y + workArea.height - bounds.height)
+    id: display.id,
+    workArea: display.workArea
   };
 }
 
-function initialPetBounds(): Electron.Rectangle {
-  const workArea = screen.getPrimaryDisplay().workArea;
-  const stored = store.get("petPosition");
-  const fallback = {
-    width: PET_WINDOW.width,
-    height: PET_WINDOW.height,
-    x: Math.round(workArea.x + workArea.width / 2 - PET_WINDOW.width / 2),
-    y: workArea.y + workArea.height - PET_WINDOW.height
-  };
+function currentDisplays(): DisplayBounds[] {
+  return screen.getAllDisplays().map(toDisplayBounds);
+}
 
-  if (!stored) return fallback;
-  return clampBoundsToWorkArea({
-    ...fallback,
-    x: stored.x,
-    y: stored.y
+function primaryDisplay(): DisplayBounds {
+  return toDisplayBounds(screen.getPrimaryDisplay());
+}
+
+function initialPetBounds(): Electron.Rectangle {
+  const stored = store.get("petPosition");
+  return initialWindowBounds({
+    displays: currentDisplays(),
+    primaryDisplay: primaryDisplay(),
+    size: PET_WINDOW,
+    saved: stored
   });
 }
 
 function persistPetPosition(): void {
   if (!petWindow || petWindow.isDestroyed()) return;
   const bounds = petWindow.getBounds();
-  store.set("petPosition", { x: bounds.x, y: bounds.y });
+  store.set("petPosition", savedPositionFromBounds(currentDisplays(), bounds, primaryDisplay()));
+}
+
+function keepPetWindowInVisibleWorkArea(): void {
+  if (!petWindow || petWindow.isDestroyed()) return;
+  const bounds = petWindow.getBounds();
+  const nextBounds = visibleWindowBounds(currentDisplays(), primaryDisplay(), bounds);
+  if (bounds.x !== nextBounds.x || bounds.y !== nextBounds.y) {
+    petWindow.setBounds(nextBounds);
+  }
+  persistPetPosition();
+  publishSnapshot();
+}
+
+function schedulePetDisplayRepair(): void {
+  if (displayChangeTimer) clearTimeout(displayChangeTimer);
+  displayChangeTimer = setTimeout(() => {
+    displayChangeTimer = null;
+    keepPetWindowInVisibleWorkArea();
+  }, 250);
+}
+
+function registerDisplayChangeHandlers(): void {
+  screen.on("display-added", schedulePetDisplayRepair);
+  screen.on("display-removed", schedulePetDisplayRepair);
+  screen.on("display-metrics-changed", schedulePetDisplayRepair);
 }
 
 function createPetWindow(): void {
@@ -460,7 +486,7 @@ function showPetContextMenu(): void {
 function movePetWithCursor(): void {
   if (!petWindow || petWindow.isDestroyed()) return;
   const cursor = screen.getCursorScreenPoint();
-  const bounds = clampBoundsToWorkArea({
+  const bounds = visibleWindowBounds(currentDisplays(), primaryDisplay(), {
     width: PET_WINDOW.width,
     height: PET_WINDOW.height,
     x: cursor.x - dragOffset.x,
@@ -1038,6 +1064,7 @@ app.whenReady().then(() => {
   registerIpc();
   createPetWindow();
   createTray();
+  registerDisplayChangeHandlers();
   scheduleReminderTimers();
   scheduleDistractionDetection();
   if (IS_DEV) {
@@ -1062,6 +1089,7 @@ app.on("before-quit", () => {
     focusTimer,
     distractionTimer,
     distractionStartupTimer,
+    displayChangeTimer,
     bubbleTimer,
     dragTimer,
     dragSafetyTimer
