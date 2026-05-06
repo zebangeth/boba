@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "tsc --noEmit && electron-vite build",
+    "test": "node scripts/test.mjs",
     "typecheck": "tsc --noEmit",
     "dist": "tsc --noEmit && electron-vite build && electron-builder --mac --win",
     "dist:mac": "tsc --noEmit && electron-vite build && electron-builder --mac",

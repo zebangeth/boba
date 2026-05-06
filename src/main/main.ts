@@ -15,11 +15,9 @@ import {
 import Store from "electron-store";
 import {
   createEmptyStats,
-  DEFAULT_SETTINGS,
-  todayKey
+  DEFAULT_SETTINGS
 } from "../shared/constants";
-import { i18n, pick, resolveLanguage } from "../shared/i18n";
-import { resolvePetAppearanceId } from "../shared/petAppearances";
+import { i18n, pick } from "../shared/i18n";
 import type {
   AppSnapshot,
   BlockingMode,
@@ -55,6 +53,13 @@ import {
   buildTrayMenuTemplate
 } from "./menus";
 import { createTrayImage } from "./trayIcon";
+import { getStoredSettings, normalizeSettings } from "./settingsStore";
+import {
+  getCurrentStats,
+  getStatsHistory,
+  resetCurrentStats,
+  updateCurrentStats
+} from "./statsStore";
 import {
   checkGitHubReleasesForUpdates,
   createCheckingUpdateCheck,
@@ -123,13 +128,7 @@ let distractionStatus: DistractionStatus = {
 let updateCheck: UpdateCheckResult = createInitialUpdateCheck();
 
 function getSettings(): Settings {
-  const stored = store.get("settings");
-  return {
-    ...DEFAULT_SETTINGS,
-    ...stored,
-    language: resolveLanguage(stored.language),
-    petAppearanceId: resolvePetAppearanceId(stored.petAppearanceId)
-  };
+  return getStoredSettings(store);
 }
 
 function text(): ReturnType<typeof i18n> {
@@ -137,11 +136,7 @@ function text(): ReturnType<typeof i18n> {
 }
 
 function setSettings(next: Settings): void {
-  const normalized = {
-    ...next,
-    language: resolveLanguage(next.language),
-    petAppearanceId: resolvePetAppearanceId(next.petAppearanceId)
-  };
+  const normalized = normalizeSettings(next);
   applyLaunchAtLoginPreference(normalized.launchAtLoginEnabled);
   store.set("settings", normalized);
   sendToAll("settings:updated", getSettingsWithSystemState());
@@ -159,57 +154,18 @@ function getSettingsWithSystemState(): Settings {
   };
 }
 
-function getStatsHistory(): StatsHistory {
-  return store.get("statsHistory", {});
-}
-
-function isSameStats(left: TodayStats | undefined, right: TodayStats): boolean {
-  return Boolean(
-    left &&
-      left.date === right.date &&
-      left.breaksTaken === right.breaksTaken &&
-      left.watersLogged === right.watersLogged &&
-      left.focusMinutes === right.focusMinutes &&
-      left.focusWarnings === right.focusWarnings
-  );
-}
-
-function saveStatsToHistory(stats: TodayStats): void {
-  if (!stats.date) return;
-  const history = getStatsHistory();
-  if (isSameStats(history[stats.date], stats)) return;
-  store.set("statsHistory", {
-    ...history,
-    [stats.date]: stats
-  });
-}
-
 function getStats(): TodayStats {
-  const today = todayKey();
-  const stats = store.get("stats", createEmptyStats());
-  if (stats.date !== today) {
-    saveStatsToHistory(stats);
-    const current = getStatsHistory()[today] ?? createEmptyStats(today);
-    store.set("stats", current);
-    saveStatsToHistory(current);
-    return current;
-  }
-  saveStatsToHistory(stats);
-  return stats;
+  return getCurrentStats(store);
 }
 
 function updateStats(mutator: (stats: TodayStats) => TodayStats): void {
-  const next = mutator(getStats());
-  store.set("stats", next);
-  saveStatsToHistory(next);
+  const next = updateCurrentStats(store, mutator);
   sendToAll("stats:updated", next);
 }
 
 function resetTodayStats(): void {
   breakMutedToday = false;
-  const reset = createEmptyStats();
-  store.set("stats", reset);
-  saveStatsToHistory(reset);
+  const reset = resetCurrentStats(store);
   sendToAll("stats:updated", reset);
 }
 
@@ -222,7 +178,7 @@ function snapshot(): AppSnapshot {
     updateCheck,
     settings: getSettingsWithSystemState(),
     stats: getStats(),
-    statsHistory: getStatsHistory(),
+    statsHistory: getStatsHistory(store),
     timers: {
       breakDueAt,
       hydrationDueAt,

@@ -160,7 +160,8 @@ export const PET_APPEARANCES: Record<PetAppearanceId, PetAppearanceManifest> = {
 };
 
 export function resolvePetAppearanceId(value: unknown): PetAppearanceId {
-  return value === "lineDog" ? "lineDog" : "lovartPuppy";
+  if (value === "lineDog" || value === "lovartPuppy") return value;
+  return "lineDog";
 }
 
 export function petAppearanceOptions(language: Language): Array<{ value: PetAppearanceId; label: string }> {
